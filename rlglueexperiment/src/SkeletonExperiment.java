@@ -67,7 +67,7 @@ public class SkeletonExperiment {
         System.out.println("Environment responded to \"If at first you don't succeed; call it version 1.0  \" with: " + responseMessage);
 
         System.out.println("\n\n----------Running a few episodes----------");
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 15; i++)
         	runEpisode(100);
         
 

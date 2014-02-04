@@ -41,7 +41,7 @@ import org.rlcommunity.rlglue.codec.taskspec.ranges.DoubleRange;
  * @author Brian Tanner
  */
 public class SkeletonAgent implements AgentInterface {
-	boolean debug = true;
+	boolean debug = false;
     Random randGenerator = new Random();
     Action lastAction;
     Observation lastObservation;
