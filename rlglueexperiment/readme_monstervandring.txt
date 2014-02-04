@@ -1,6 +1,6 @@
 Regler för monstervandring:
 
-Monstervandringen sker över ett rutnät om 6x6 rutor, numrerade från 0 till 35. Ruta 0 finns uppe till vänster, ruta 5 uppe till höver och ruta 35 nere till höger. (Interpolera resten!)
+Monstervandringen sker över ett rutnät om 6x6 rutor, numrerade från 0 till 35. Ruta 0 finns uppe till vänster, ruta 5 uppe till höger och ruta 35 nere till höger. (Interpolera resten!)
 
 Actions
 Man får ta ett av fyra möjliga actions, numrerade från 0 till 3

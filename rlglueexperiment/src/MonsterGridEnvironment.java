@@ -54,7 +54,7 @@ public class MonsterGridEnvironment implements EnvironmentInterface {
 	    TaskSpecVRLGLUE3 theTaskSpecObject = new TaskSpecVRLGLUE3();
         theTaskSpecObject.setEpisodic();
         theTaskSpecObject.setDiscountFactor(1.0d);
-	//Specify that there will be an coordinate system [-7,28] for the state
+	//Specify that there will be an coordinate system [0,35] for the state
         theTaskSpecObject.addDiscreteObservation(new IntRange(0, 35));
 	//Specify that there will be an integer action [0,3]
         theTaskSpecObject.addDiscreteAction(new IntRange(0, 3));
