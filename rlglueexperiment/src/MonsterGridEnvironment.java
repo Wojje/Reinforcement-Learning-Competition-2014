@@ -96,7 +96,7 @@ public class MonsterGridEnvironment implements EnvironmentInterface {
         
     	
     	
-        Observation returnObservation=new Observation(1,0,0);
+        Observation returnObservation=new Observation(3,0,0);
         returnObservation.intArray[0]=currentState;
         int i = 1;
         for (Monster m : monsters) {
@@ -172,7 +172,7 @@ public class MonsterGridEnvironment implements EnvironmentInterface {
         
         theReward -= 0.01;
         
-        Observation returnObservation=new Observation(1,0,0);
+        Observation returnObservation=new Observation(3,0,0);
         returnObservation.intArray[0]=currentState;
         int i = 1;
         for (Monster m : monsters) {
