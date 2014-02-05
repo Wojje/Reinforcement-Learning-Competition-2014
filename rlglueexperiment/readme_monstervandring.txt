@@ -14,7 +14,7 @@ Det finns en målruta, och om man tar sig till denna vinner man ett reward om 1.0
 
 Det finns ett antal fail-rutor: 
 1) dels är rutorna på kanten av 6x6-matrisen en avgrund (totalt 20 stycken avgrundsrutor alltså)
-2) dels finns det två monster som i början av experimentet startar på slumpmässigt valda rutor. Dessa monster rör sig ibland i slumpmässig riktning till en närliggande ruta mellan episoderna. Ju fler episoder det gått sedan ett monster rörde sig, desto mer sannolikt är det att monstret rör sig. Störst sannolikhet att ett monster flyttar på sig (30%) är det efter att monstret stått still i minst 35 episoder. 
+2) dels finns det två monster som i början av experimentet startar på slumpmässigt valda rutor. Dessa monster rör sig ibland i slumpmässig riktning till en närliggande ruta ett action. Ju fler actions det gått sedan ett monster rörde sig, desto mer sannolikt är det att monstret rör sig. Störst sannolikhet att ett monster flyttar på sig (30%) är det efter att monstret stått still i minst 20 actions. 
 
 För varje steg som tas ges ett reward om -0.01 enheter. 
 

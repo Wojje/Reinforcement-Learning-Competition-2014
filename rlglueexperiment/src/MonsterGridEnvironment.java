@@ -54,7 +54,11 @@ public class MonsterGridEnvironment implements EnvironmentInterface {
 	    TaskSpecVRLGLUE3 theTaskSpecObject = new TaskSpecVRLGLUE3();
         theTaskSpecObject.setEpisodic();
         theTaskSpecObject.setDiscountFactor(1.0d);
-	//Specify that there will be an coordinate system [0,35] for the state
+	//Specify that there will be an coordinate system [0,35] for the state (position of walker)
+        theTaskSpecObject.addDiscreteObservation(new IntRange(0, 35));
+    //Add a coordinate system for the state (position of first monster)
+        theTaskSpecObject.addDiscreteObservation(new IntRange(0, 35));
+    //Add a coordinate system for the state (position of second monster)
         theTaskSpecObject.addDiscreteObservation(new IntRange(0, 35));
 	//Specify that there will be an integer action [0,3]
         theTaskSpecObject.addDiscreteAction(new IntRange(0, 3));
@@ -75,6 +79,11 @@ public class MonsterGridEnvironment implements EnvironmentInterface {
 
     public Observation env_start() {
     	
+    	//Reset monsters each episode to a random position
+    	for ( int i = 0; i < monsters.length; i++) {
+    		monsters[i] = new Monster(6);
+    	}
+    	
     	//set new random successState
     	do {
     		successState = random.nextInt(30);
@@ -89,6 +98,10 @@ public class MonsterGridEnvironment implements EnvironmentInterface {
     	
         Observation returnObservation=new Observation(1,0,0);
         returnObservation.intArray[0]=currentState;
+        int i = 1;
+        for (Monster m : monsters) {
+        	returnObservation.intArray[i++] = m.getState();
+        }
         return returnObservation;
     }
 
@@ -153,16 +166,18 @@ public class MonsterGridEnvironment implements EnvironmentInterface {
         	episodeOver = true;
         }
         
-        if (episodeOver) {
-        	for (Monster m : monsters) {
-        		m.nextEpisode();
-        	}
-        }
+    	for (Monster m : monsters) {
+    		m.nextTurn();
+    	}
         
         theReward -= 0.01;
         
         Observation returnObservation=new Observation(1,0,0);
         returnObservation.intArray[0]=currentState;
+        int i = 1;
+        for (Monster m : monsters) {
+        	returnObservation.intArray[i++] = m.getState();
+        }
         
         Reward_observation_terminal returnRewardObs=new Reward_observation_terminal(theReward,returnObservation,episodeOver);
         return returnRewardObs;
@@ -170,10 +185,10 @@ public class MonsterGridEnvironment implements EnvironmentInterface {
 
     public void env_cleanup() {
     }
-
+    
     public String env_message(String message) {
         if(message.equals("what is your name?"))
-            return "my name is skeleton_environment, Java edition!";
+            return "my name is MonsterGridEnvironment, Java edition!";
 
 	return "I don't know how to respond to your message";
     }

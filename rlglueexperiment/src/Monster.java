@@ -16,10 +16,10 @@ public class Monster {
 		maxState = width * width - 1;
 	}
 	
-	public void nextEpisode() {
+	public void nextTurn() {
 		movedsince++;
-			//Chance to move grows linearly up to a max of 30% after 35 episodes
-		double chanceToMove = (((movedsince > 35) ? 35 : movedsince) / 35.0) * 0.3;
+			//Chance to move grows linearly up to a max of 30% after 20 turns
+		double chanceToMove = (((movedsince > 20) ? 20 : movedsince) / 20.0) * 0.3;
 		if (debug) System.out.println("Chance to move is now " + chanceToMove);
 		if (rand.nextDouble() < chanceToMove) {
 			//move
