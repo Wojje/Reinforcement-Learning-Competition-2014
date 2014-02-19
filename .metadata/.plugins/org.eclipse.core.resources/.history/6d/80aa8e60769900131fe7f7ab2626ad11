@@ -1,0 +1,190 @@
+
+public class suttonandbarto44 {
+
+	private static final boolean originalFormulation = true;
+	private static double gamma = 0.9;
+	private static double[][] stateValues = new double[21][21]; 
+	private static int[][] policy = new int[21][21];
+	private static BigDecimal[][] poissons = new BigDecimal[6][21];
+	
+	private static double poisson(int expected, int n) {
+		if (poissons[expected][n] != -1.0) {
+			return poissons[expected][n];
+		}
+		if (n < 0)
+			return 0.0;
+		double nfac = 1;
+		for (int i = 1; i <= n; i++) {
+			nfac = i * nfac; 
+		}
+		double temp = 1;
+		for (int i = 0; i < n; i++) {
+			temp *= expected;
+		}
+		return poissons[expected][n] = temp/nfac*Math.exp(-1*expected); 
+	}
+	
+	
+	public static double getValue(int lot1, int lot2) {
+		if (lot1 < 0) 
+			lot1 = 0;
+		if (lot2 < 0)
+			lot2 = 0;
+		if (lot1 > 20)
+			lot1 = 20;
+		if (lot2 > 20)
+			lot2 = 20;
+		return stateValues[lot1][lot2];
+	}
+	
+	private static double reward(int available, int requested) {
+		if (requested > available)
+			return 10.0*available;
+		else 
+			return 10.0*requested;
+	}
+	
+	public static void main(String[] args) {
+
+		double delta = 0.0;
+		boolean policystable;
+		do {
+			do {
+				//policy evaluation
+				delta = 0;
+					
+				for (int lot1 = 0; lot1 < 21; lot1++) {
+					for (int lot2 = 0; lot2 < 21; lot2++) {
+						double oldVal = stateValues[lot1][lot2];
+						int action = policy[lot1][lot2];
+						double newVal = 0;
+						
+						int nextLot1 = lot1 - action;
+						int nextLot2 = lot2 + action;
+						//lot 1 returns
+						for (int i = 0; i < 13; i++) {
+							//lot 1 requests
+							for (int j = 0; j < 13; j++) {
+								//lot 2 returns
+								for (int k = 0; k < 13; k++) {
+									//lot 2 requests
+									for (int l = 0; l < 13; l++) {
+										double probability = poisson(3, i) *
+												poisson(3,j) * poisson(2,k) *
+												poisson(4,l);
+										
+										if (originalFormulation) {
+											newVal += probability * ( 
+													reward(Math.min(nextLot1 + i,20), j) + 
+													reward(Math.min(nextLot2 + k,20), l) + 
+													Math.abs(action) * -2.0 +
+													gamma * getValue(((nextLot1 + i) > 20 ? 20 - j : (nextLot1 + i) - j),
+															((nextLot2 + k) > 20 ? 20 - l : nextLot2 + k - l)));
+										}
+										else {
+											newVal += probability * (
+													reward(Math.min(nextLot1 + i,20), j) + 
+													reward(Math.min(nextLot2 + k,20), l) + 
+													(action > 0 ? ((action - 1) * -2.0) : action * 2.0) +
+													(nextLot1 > 10 ? -4.0 : 0) +
+													(nextLot2 > 10 ? -4.0 : 0) +
+													gamma * getValue((nextLot1 + i) > 20 ? 20 - j : (nextLot1 + i) - j,
+															(nextLot2 + k) > 20 ? 20 - l : nextLot2 + k - l)
+													);
+										}		
+									}
+								}
+							}
+						}
+						delta = Math.max(delta, Math.abs(newVal-oldVal));
+						stateValues[lot1][lot2] = newVal;
+					}
+				}
+				System.out.println("delta: " + delta);
+			} while (delta > 0.1);
+			
+			for(int i= 20; i != -1; i--) {
+				for (int j = 0; j < 21; j++) {
+					System.out.print(" " + stateValues[i][j]);
+				}
+				System.out.println("");					
+			}
+			
+			//policy improvement
+			policystable = true;
+			for (int lot1 = 0; lot1 < 21; lot1++) {
+				for (int lot2 = 0; lot2 < 21; lot2++) {
+					int oldAction = policy[lot1][lot2];
+					double bestActionValue = 0;
+					int bestAction = oldAction;
+					for (int action = -5; action < 6; action++) {
+						if (action < 0) {
+							if (Math.abs(action) > lot2) {
+								continue;
+							}
+						} else if (action > 0) {
+							if (action > lot1) {
+								continue;
+							}
+						}
+						int nextLot1 = lot1 - action;
+						int nextLot2 = lot2 + action;
+						double currentActionValue = 0;
+						//lot 1 returns
+						for (int i = 0; i < 13; i++) {
+							//lot 1 requests
+							for (int j = 0; j < 13; j++) {
+								//lot 2 returns
+								for (int k = 0; k < 13; k++) {
+									//lot 2 requests
+									for (int l = 0; l < 13; l++) {
+										double probability = poisson(3, i) *
+												poisson(3,j) * poisson(2,k) *
+												poisson(4,l);
+										if (originalFormulation) {
+											currentActionValue += probability * ( 
+													reward(Math.min(nextLot1 + i,20), j) + 
+													reward(Math.min(nextLot2 + k,20), l) + 
+													(-2.0 * Math.abs(action)) + 
+													gamma * getValue(((nextLot1 + i) > 20 ? 20 - j : (nextLot1 + i) - j),
+															((nextLot2 + k) > 20 ? 20 - l : nextLot2 + k - l)));
+										} else {
+											currentActionValue += probability * (
+													reward(Math.min(nextLot1 + i,20), j) + 
+													reward(Math.min(nextLot2 + k,20), l) + 
+													(action > 0 ? ((action - 1) * -2.0) : action * 2.0) +
+													(nextLot1 > 10 ? -4.0 : 0) +
+													(nextLot2 > 10 ? -4.0 : 0) +
+													gamma * getValue(((nextLot1 + i) > 20 ? 20 - j : (nextLot1 + i) - j),
+															((nextLot2 + k) > 20 ? 20 - l : nextLot2 + k - l)));
+										}
+										
+									}
+								}
+							}
+						}
+
+						if (lot1 == 0 && lot2 == 20)
+							System.out.println("actionValue: " + currentActionValue);
+						if (bestActionValue < currentActionValue) {
+							bestActionValue = currentActionValue;
+							bestAction = action;
+						}
+					}
+					if (bestAction != oldAction) {
+						System.out.println("updating policy");
+						policystable = false;
+						policy[lot1][lot2] = bestAction;
+					}
+				}
+			}
+			for(int i= 20; i != -1; i--) {
+				for (int j = 0; j < 21; j++) {
+					System.out.print(" " + policy[i][j]);
+				}
+				System.out.println("");					
+			}
+			
+		} while (!policystable);
+	}
+}

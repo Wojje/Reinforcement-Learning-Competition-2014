@@ -1,8 +1,0 @@
-
-public class GamblerMain {
-
-	static double[] V = new double[100];
-	public static void main(String[] args) {
-		
-	}
-}

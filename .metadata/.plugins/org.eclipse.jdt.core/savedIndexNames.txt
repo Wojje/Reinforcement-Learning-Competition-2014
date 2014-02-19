@@ -1,18 +1,4 @@
 INDEX VERSION 1.126+C:\Documents and Settings\Daniel\workspace\Reinforcement-Learning-Competition-2014\.metadata\.plugins\org.eclipse.jdt.core
-3389917248.index
-2185529252.index
-555390124.index
-3638830766.index
-548148497.index
-2147789384.index
-4074554315.index
-2066398641.index
-889643584.index
-3728045392.index
+1609962587.index
+1551136069.index
 1497081102.index
-4266461836.index
-1613573400.index
-212292459.index
-3545310482.index
-2084622509.index
-2238952850.index

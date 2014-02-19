@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy element &apos;GamblerMain.java&apos; to &apos;GamblerMain.java&apos;&#x0D;&#x0A;- Original project: &apos;GamblerValueIteration&apos;&#x0D;&#x0A;- Destination element: &apos;GamblerMain.java&apos;&#x0D;&#x0A;- Original element: &apos;GamblerMain.java&apos;" description="Copy compilation unit" destination="/src&lt;{GamblerMain.java" element1="/src&lt;{GamblerMain.java" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1392819287343" units="1" version="1.0"/>
+</session>
