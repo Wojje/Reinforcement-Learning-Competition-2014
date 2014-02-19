@@ -1,0 +1,46 @@
+
+public class GamblerMain {
+
+	static double gamma = 1.0;
+	static double p = 0.49;
+	final static int maxStates = 101;
+	static double[] V = new double[maxStates];
+	static int[] bestActions = new int[maxStates];
+	static double theta = 0.000000000000000000001;
+	
+	public static void main(String[] args) {
+		V[maxStates -1] = 1.0;
+		V[0] = 0.0;
+		double delta;
+		double oldValue;
+		double bestNewValue;
+		do{
+			delta = 0.0;
+			
+			for (int i = 0; i < maxStates-1; i++) {
+				oldValue = V[i];
+				bestNewValue = 0.0;
+				for (int j = 1; j <= i; j++) {
+					double valueWin = p * V[(i + j) > (maxStates - 1) ? 
+							(maxStates - 1): i + j];
+					double valueLoss = (1-p) * V[(i - j)];
+					double valueTotal = valueLoss + valueWin;
+					if (bestNewValue < valueTotal) {
+						bestNewValue = valueTotal;
+						bestActions[i] = j;
+					}
+				}
+				V[i] = bestNewValue;
+				if (delta < Math.abs(V[i] - oldValue)) {
+					delta = Math.abs(V[i] - oldValue);
+				}
+			}
+			System.out.println("h");
+		} while (delta > theta);
+		
+		for (int i = 0; i < maxStates; i++) {
+			System.out.println("i: " + i + " V: " + V[i] + " best action: " +
+					bestActions[i]);
+		}
+	}
+}

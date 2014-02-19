@@ -1,0 +1,31 @@
+
+public class GamblerMain {
+
+	static double gamma = 1.0;
+	static double p = 0.4;
+	final static int maxStates = 101;
+	static double[] V = new double[maxStates];
+	static double theta = 0.0001;
+	
+	public static void main(String[] args) {
+		V[101] = 1.0;
+		V[0] = 0.0;
+		double delta;
+		double oldValue;
+		double bestNewValue;
+		do{
+			delta = 0.0;
+			
+			for (int i = 0; i < maxStates; i++) {
+				oldValue = V[i];
+				bestNewValue = 0.0;
+				for (int j = 1; j < i; j++) {
+					
+				}
+			}
+			
+		} while (delta > theta);
+		
+		
+	}
+}
