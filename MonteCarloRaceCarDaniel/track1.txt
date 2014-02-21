@@ -1,0 +1,34 @@
+19 33
+xxxxxxxxxxxxxxxxxxx
+xxxx              G
+xxx               G
+xxx               G
+xx                G
+x                 G
+x                 G
+x           xxxxxxx
+x          xxxxxxxx
+x          xxxxxxxx
+x          xxxxxxxx
+x          xxxxxxxx
+x          xxxxxxxx
+x          xxxxxxxx
+xx         xxxxxxxx
+xx         xxxxxxxx
+xx         xxxxxxxx
+xx         xxxxxxxx
+xx         xxxxxxxx
+xx         xxxxxxxx
+xx         xxxxxxxx
+xx         xxxxxxxx
+xxx        xxxxxxxx
+xxx        xxxxxxxx
+xxx        xxxxxxxx
+xxx        xxxxxxxx
+xxx        xxxxxxxx
+xxx        xxxxxxxx
+xxx        xxxxxxxx
+xxxx       xxxxxxxx
+xxxx       xxxxxxxx
+xxxxSSSSSSSxxxxxxxx
+xxxxxxxxxxxxxxxxxxx

@@ -1,0 +1,5 @@
+1392901776938	Rename type 'SkeletonExperiment'
+1392901787344	Rename type 'SkeletonEnvironment'
+1392901807250	Rename type 'SkeletonAgent'
+1392906455921	Extract method 'changeSpeed'
+1392909731077	Extract method 'printTrack'
