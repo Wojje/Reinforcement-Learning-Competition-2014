@@ -110,22 +110,33 @@ public class DDV implements AgentInterface {
 		observedStateTrans.put(lastStateAction, sprime);
 		
 		//Do update (line 1 in pseudo
-		update();
+//		update();
+		Q_upper = null;
+		Q_lower = null;
+		V_upper = null;
+		V_lower = null;
+		mu_upper = null;
+		//implement later.
+		
+		
 		if(valueDeltaSatisfactory()){
 			computePolicy();
 		} 
+		
+		double nextAction = null;
 		
 		for(Integer i : observedStates){
 			for(int a = actRangeMin; a <= actRangeMax; a++){
 				StateAction sa = new StateAction(i, a);
 				DoubleTuple qprime = computeQPrime(sa);
 				double deltaQ = deltaDoubles(qprime);
-				
-				
-				
+				double deltaV = mu_upper*deltaQ;
+				if (deltaV < minDeltaV)
+					nextAction = a; //(s,a) = argmin_(s,a) deltaV(s_0|s,a)
 			}
 		}
 		
+		//increment N(s,a) counter
 		
 		return null;
 	}
