@@ -101,6 +101,8 @@ public class DDV implements AgentInterface {
 	public Action agent_start(Observation o) {
 		int sprime = o.getInt(0);
 		observedStates.add(new Integer(sprime));
+		
+		//do action?
 
 		return null;
 	}
@@ -148,23 +150,23 @@ public class DDV implements AgentInterface {
 	}
 	
 	private void updateStateActionCounter(StateAction sa) {
-		if stateActionCounter.containsKey(StateAction) {
+		if stateActionCounter.containsKey(sa) {
 			stateActionCounter.put(
-					stateAction, 
-					stateActionCounter.get(stateAction) + 1);
+					sa, 
+					stateActionCounter.get(sa) + 1);
 		}
-		else stateActionCounter.put(stateAction, 1);
+		else stateActionCounter.put(sa, 1);
 	}
 	
 	private void updateStateActionStateCounter(StateAction lastStateAction, State sprime) {
-		StateActionState stateActionState = 
-				new StateActionSpace(lastStateAction.s, lastStateAction.a, sprime);
-		if stateActionStateCounter.containsKey(stateActionState) {
+		StateActionState sas = 
+				new StateActionState(lastStateAction.s, lastStateAction.a, sprime);
+		if stateActionStateCounter.containsKey(sas) {
 			stateActionStateCounter.put(
-					stateActionState, 
-					stateActionStateCounter.get(stateActionState) + 1);
+					sas, 
+					stateActionStateCounter.get(sas) + 1);
 		}
-		else stateActionStateCounter.put(stateActionState, 1);
+		else stateActionStateCounter.put(sas, 1);
 	}
 
 	private DoubleTuple computeQPrime(StateAction sa) {
