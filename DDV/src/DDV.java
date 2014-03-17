@@ -1,5 +1,3 @@
-package agent;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -120,11 +118,13 @@ public class DDV implements AgentInterface {
 		//Do update (line 1 in pseudo
 		update();
 		
+		double mu_upper = updateMuUpper();
+		
 		if(valueDeltaSatisfactory()){
 			computePolicy();
 		} 
 		
-		double nextAction;
+		int nextAction = 0;
 		double minDeltaV = Double.POSITIVE_INFINITY; 
 		
 		for(Integer i : observedStates){
@@ -150,7 +150,7 @@ public class DDV implements AgentInterface {
 	}
 	
 	private void updateStateActionCounter(StateAction sa) {
-		if stateActionCounter.containsKey(sa) {
+		if (stateActionCounter.containsKey(sa)) {
 			stateActionCounter.put(
 					sa, 
 					stateActionCounter.get(sa) + 1);
@@ -158,15 +158,19 @@ public class DDV implements AgentInterface {
 		else stateActionCounter.put(sa, 1);
 	}
 	
-	private void updateStateActionStateCounter(StateAction lastStateAction, State sprime) {
+	private void updateStateActionStateCounter(StateAction lastStateAction, int sprime) {
 		StateActionState sas = 
 				new StateActionState(lastStateAction.s, lastStateAction.a, sprime);
-		if stateActionStateCounter.containsKey(sas) {
+		if (stateActionStateCounter.containsKey(sas)) {
 			stateActionStateCounter.put(
 					sas, 
 					stateActionStateCounter.get(sas) + 1);
 		}
 		else stateActionStateCounter.put(sas, 1);
+	}
+	
+	private double updateMuUpper() {
+		return 1;
 	}
 
 	private DoubleTuple computeQPrime(StateAction sa) {
@@ -234,7 +238,7 @@ public class DDV implements AgentInterface {
 	private class StateActionState {
 		private int s, a, sprime;
 
-		public StateAction(int state, int action, int stateprime) {
+		public StateActionState(int state, int action, int stateprime) {
 			s = state;
 			a = action;
 			sprime = stateprime;
@@ -257,7 +261,7 @@ public class DDV implements AgentInterface {
 			if (obj.getClass() != StateAction.class) {
 				return false;
 			} else {
-				StateAction as = (StateActionState) obj;
+				StateActionState as = (StateActionState) obj;
 				return s == as.s 
 						&& a == as.a 
 						&& sprime == as.sprime;
