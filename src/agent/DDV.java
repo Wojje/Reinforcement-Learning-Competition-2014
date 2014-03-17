@@ -112,6 +112,7 @@ public class DDV implements AgentInterface {
 		observedRewards.put(lastStateAction, r);
 		observedStateTrans.put(lastStateAction, sprime);
 		
+		//increment N(s,a,s') counter
 		updateStateActionStateCounter(lastStateAction, sprime);
 		
 		//Do update (line 1 in pseudo
@@ -122,6 +123,7 @@ public class DDV implements AgentInterface {
 		} 
 		
 		double nextAction;
+		double minDeltaV = Double.POSITIVE_INFINITY; 
 		
 		for(Integer i : observedStates){
 			for(int a = actRangeMin; a <= actRangeMax; a++){
@@ -131,6 +133,7 @@ public class DDV implements AgentInterface {
 				double deltaV = mu_upper*deltaQ;
 				if (deltaV < minDeltaV)
 					nextAction = a; //(s,a) = argmin_(s,a) deltaV(s_0|s,a)
+					minDeltaV = deltaV;
 			}
 		}
 		
