@@ -21,9 +21,8 @@ public class DDV implements AgentInterface {
 	private double gamma = 1.0; // Decay of rewards
 
 	private List<Integer> observedStates;
-	private Map<StateAction, Integer> observedStateTrans;
+	private Map<StateAction, Integer> observedStateTrans, stateActionCounter;
 	private Map<StateAction, Double> observedRewards;
-	private Map<StateAction, Integer> stateActionCounter;
 	private Map<StateActionState, Integer> stateActionStateCounter;
 	
 	
@@ -31,13 +30,8 @@ public class DDV implements AgentInterface {
 
 	private Map<StateAction, DoubleTuple> qs;
 
-	private int obsRangeMin;
-	private int obsRangeMax;
-	private int actRangeMin;
-	private int actRangeMax;
-	private double maxRew;
-	private double minRew;
-	private double Rroof;
+	private int obsRangeMin,obsRangeMax, actRangeMin, actRangeMax;
+	private double maxRew, minRew, Rroof;
 
 	private StateAction lastStateAction;
 
