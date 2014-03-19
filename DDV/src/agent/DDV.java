@@ -38,7 +38,7 @@ public class DDV implements AgentInterface {
 	@Override
 	public void agent_cleanup() {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
@@ -196,7 +196,20 @@ public class DDV implements AgentInterface {
 	}
 
 	private void update() {
-
+		// Eqution 3,4 and 8.
+		updateQ_upper();
+	}
+	
+	private void updateQ_upper(){
+		// Equation 3
+	}
+	
+	private void updateQ_lower(){
+		// Equation 4
+	}
+	
+	private void updateMY_upper(){
+		// Equation 8
 	}
 
 	private class StateAction {
