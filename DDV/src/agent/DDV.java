@@ -1,3 +1,5 @@
+package agent;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -78,13 +80,13 @@ public class DDV implements AgentInterface {
 		minRew = theRewardRange.getMin();
 		Rroof = maxRew * 0.5;
 
-		observedRewards = new HashMap<>();
-		observedStateTrans = new HashMap<>();
-		observedStates = new LinkedList<>();
-		stateActionCounter = new HashMap<>();
-		stateActionStateCounter = new HashMap<>();
+		observedRewards = new HashMap<StateAction, Double>();
+		observedStateTrans = new HashMap<StateAction, Integer>();
+		observedStates = new LinkedList<Integer>();
+		stateActionCounter = new HashMap<StateAction, Integer>();
+		stateActionStateCounter = new HashMap<StateActionState, Integer>();
 		
-		values = new HashMap<>();
+		values = new HashMap<Integer, DoubleTuple>();
 
 	}
 
@@ -195,7 +197,7 @@ public class DDV implements AgentInterface {
 	}
 
 	private void computePolicy() {
-		// TODO Auto-generated method stub
+		// TODO Auto-generated method stubs
 
 	}
 
