@@ -16,7 +16,8 @@ public class DDV implements AgentInterface {
 
 	private double accuracy = 0.001; // Proper value?
 	private double upperConf = 0.001; // Woot?
-	private double lowerConf = 0.001; // Woot?
+	private double lowerConf = 0.001, 
+				   my_upper = 0.001; // Woot?
 
 	private double gamma = 1.0; // Decay of rewards
 
@@ -114,8 +115,6 @@ public class DDV implements AgentInterface {
 		//Do update (line 1 in pseudo
 		update();
 		
-		double mu_upper = updateMuUpper();
-		
 		if(valueDeltaSatisfactory()){
 			computePolicy();
 		} 
@@ -128,7 +127,7 @@ public class DDV implements AgentInterface {
 				StateAction sa = new StateAction(i, a);
 				DoubleTuple qprime = computeQPrime(sa);
 				double deltaQ = deltaDoubles(qprime);
-				double deltaV = mu_upper*deltaQ;
+				double deltaV = my_upper*deltaQ;
 				if (deltaV < minDeltaV)
 					nextAction = a; //(s,a) = argmin_(s,a) deltaV(s_0|s,a)
 					minDeltaV = deltaV;
@@ -163,10 +162,6 @@ public class DDV implements AgentInterface {
 					stateActionStateCounter.get(sas) + 1);
 		}
 		else stateActionStateCounter.put(sas, 1);
-	}
-	
-	private double updateMuUpper() {
-		return 1;
 	}
 
 	private DoubleTuple computeQPrime(StateAction sa) {
