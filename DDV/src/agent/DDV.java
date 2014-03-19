@@ -21,11 +21,10 @@ public class DDV implements AgentInterface {
 
 	private double gamma = 1.0; // Decay of rewards
 
-	private List<Integer> observedStates;
-	private Map<StateAction, Integer> observedStateTrans, stateActionCounter;
+	private List<State> observedStates;
+	private Map<StateAction, State> observedStateTrans;
+	private Map<StateAction, Integer> stateActionCounter;
 	private Map<StateAction, Double> observedRewards;
-	private Map<StateActionState, Integer> stateActionStateCounter;
-	
 	
 	private Map<Integer, DoubleTuple> values;
 
@@ -76,10 +75,9 @@ public class DDV implements AgentInterface {
 		Rroof = maxRew * 0.5;
 
 		observedRewards = new HashMap<StateAction, Double>();
-		observedStateTrans = new HashMap<StateAction, Integer>();
-		observedStates = new LinkedList<Integer>();
+		observedStateTrans = new HashMap<StateAction, State>();
+		observedStates = new LinkedList<State>();
 		stateActionCounter = new HashMap<StateAction, Integer>();
-		stateActionStateCounter = new HashMap<StateActionState, Integer>();
 		
 		values = new HashMap<Integer, DoubleTuple>();
 
@@ -94,8 +92,8 @@ public class DDV implements AgentInterface {
 
 	@Override
 	public Action agent_start(Observation o) {
-		int sprime = o.getInt(0);
-		observedStates.add(new Integer(sprime));
+
+		observedStates.add(new State(o));
 		
 		//do action?
 
@@ -104,13 +102,12 @@ public class DDV implements AgentInterface {
 
 	@Override
 	public Action agent_step(double r, Observation o) {
-		int sprime = o.getInt(0);
-		observedStates.add(new Integer(sprime));
+		State sprime = new State(o);
+		observedStates.add(new State(o));
 		observedRewards.put(lastStateAction, r);
 		observedStateTrans.put(lastStateAction, sprime);
 		
-		//increment N(s,a,s') counter
-		updateStateActionStateCounter(lastStateAction, sprime);
+		
 		
 		//Do update (line 1 in pseudo
 		update();
@@ -119,17 +116,19 @@ public class DDV implements AgentInterface {
 			computePolicy();
 		} 
 		
-		int nextAction = 0;
+		ActionStep nextAction = null;
 		double minDeltaV = Double.POSITIVE_INFINITY; 
 		
-		for(Integer i : observedStates){
+		for(State s : observedStates){
 			for(int a = actRangeMin; a <= actRangeMax; a++){
-				StateAction sa = new StateAction(i, a);
+				ActionStep act = new ActionStep(new Action(1,0,0));
+				act.setInt(0, a);
+				StateAction sa = new StateAction(s, act);
 				DoubleTuple qprime = computeQPrime(sa);
 				double deltaQ = deltaDoubles(qprime);
 				double deltaV = my_upper*deltaQ;
 				if (deltaV < minDeltaV)
-					nextAction = a; //(s,a) = argmin_(s,a) deltaV(s_0|s,a)
+					nextAction = act; //(s,a) = argmin_(s,a) deltaV(s_0|s,a)
 					minDeltaV = deltaV;
 			}
 		}
@@ -149,20 +148,11 @@ public class DDV implements AgentInterface {
 			stateActionCounter.put(
 					sa, 
 					stateActionCounter.get(sa) + 1);
+		} else {
+			stateActionCounter.put(sa, 1);
 		}
-		else stateActionCounter.put(sa, 1);
 	}
 	
-	private void updateStateActionStateCounter(StateAction lastStateAction, int sprime) {
-		StateActionState sas = 
-				new StateActionState(lastStateAction.s, lastStateAction.a, sprime);
-		if (stateActionStateCounter.containsKey(sas)) {
-			stateActionStateCounter.put(
-					sas, 
-					stateActionStateCounter.get(sas) + 1);
-		}
-		else stateActionStateCounter.put(sas, 1);
-	}
 
 	private DoubleTuple computeQPrime(StateAction sa) {
 		if (observedStateTrans.containsKey(sa)) {
@@ -205,77 +195,6 @@ public class DDV implements AgentInterface {
 	
 	private void updateMY_upper(){
 		// Equation 8
-	}
-
-	private class StateAction {
-		private int s, a;
-
-		public StateAction(int state, int action) {
-			s = state;
-			a = action;
-		}
-
-		public int getAction() {
-			return a;
-		}
-
-		public int getState() {
-			return s;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (obj.getClass() != StateAction.class) {
-				return false;
-			} else {
-				StateAction as = (StateAction) obj;
-				return s == as.s && a == as.a;
-			}
-		}
-
-		@Override
-		public int hashCode() {
-			return 8011 * s + 9587 * a;
-		}
-	}
-	
-	private class StateActionState {
-		private int s, a, sprime;
-
-		public StateActionState(int state, int action, int stateprime) {
-			s = state;
-			a = action;
-			sprime = stateprime;
-		}
-
-		public int getAction() {
-			return a;
-		}
-
-		public int getPreviousState() {
-			return s;
-		}
-		
-		public int getNewState() {
-			return sprime;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (obj.getClass() != StateAction.class) {
-				return false;
-			} else {
-				StateActionState as = (StateActionState) obj;
-				return s == as.s 
-						&& a == as.a 
-						&& sprime == as.sprime;
-			}
-		}
-
-		@Override
-		public int hashCode() {
-			return 8011 * s + 9587 * a + 8651*sprime;
-		}
 	}
 
 	private class DoubleTuple {
