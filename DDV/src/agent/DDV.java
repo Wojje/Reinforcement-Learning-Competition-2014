@@ -28,12 +28,12 @@ public class DDV implements AgentInterface {
 	private Map<StateAction, Integer> stateActionCounter;
 	private Map<StateAction, Double> observedRewards;
 	
-	private Map<Integer, DoubleTuple> values;
+	private Map<State, DoubleTuple> values;
 
 	private Map<StateAction, DoubleTuple> qs;
 
 	private int obsRangeMin,obsRangeMax, actRangeMin, actRangeMax;
-	private double maxRew, minRew, Rroof;
+	private double maxRew, minRew, Rroof, vMax;
 
 	private StateAction lastStateAction;
 
@@ -75,6 +75,7 @@ public class DDV implements AgentInterface {
 		maxRew = theRewardRange.getMax();
 		minRew = theRewardRange.getMin();
 		Rroof = maxRew * 0.5;
+		vMax = maxRew / (1-gamma);
 
 		observedRewards = new HashMap<StateAction, Double>();
 		observedStateTrans = new HashMap<StateAction, Set<State>>();
@@ -82,7 +83,7 @@ public class DDV implements AgentInterface {
 		stateActionCounter = new HashMap<StateAction, Integer>();
 		stateActionStateCounter = new HashMap<StateActionState, Integer>();
 		
-		values = new HashMap<Integer, DoubleTuple>();
+		values = new HashMap<State, DoubleTuple>();
 
 	}
 
@@ -225,24 +226,102 @@ public class DDV implements AgentInterface {
 		int nsa = stateActionCounter.get(sa);
 		double deltaOmega = delta(nsa)/2;
 		
+		Map<StateActionState, Double> pRoof = createPRoof(sa);
+		Map<StateActionState, Double> pTilde = new HashMap<StateActionState, Double>(pRoof);
+		
 		List<State> sPrimes = new LinkedList<State>();
-		for(State sprime : observedStateTrans.get(sa)){
-			if( pRoof(sprime, sa) < 1){
-				sPrimes.add(sprime);
+		for(StateActionState sas : pRoof.keySet()){
+			if(pRoof.get(sas) < 1){
+				sPrimes.add(sas.getSprime());
 			}
 		}
 		
-		Map<StateActionState, Double> pTilde = new HashMap<StateActionState, Double>(); 
+		
 		while( deltaOmega > 0){
 			
-			State s_ = argmin()
-			
-			
+			StateActionState sasFloor = new StateActionState(sa, argmin(pTilde));
+			StateActionState sasRoof = new StateActionState(sa, argmax(sPrimes, pTilde));
+			double sasrval = 1-pTilde.get(sasRoof);
+			double sasfval = pTilde.get(sasFloor);
+			double zeta = least(sasrval, sasfval, deltaOmega);
+			pTilde.put(sasFloor, sasfval - zeta);
+			pTilde.put(sasRoof, sasrval + zeta);
+			deltaOmega = deltaOmega - zeta;
 		}
 		
-		return 0;
+		return pTilde;
 	}
 	
+	
+	
+	private double least(double d, double d2, double d3) {
+		return Math.min(Math.min(d,d2), d3);
+	}
+
+	private Map<StateActionState, Double> createPRoof(StateAction sa) {
+		Map<StateActionState, Double> ret = new HashMap<StateActionState, Double>();
+		double prob;
+		for(State s : observedStates){
+			StateActionState sas = new StateActionState(sa, s);
+			prob = stateActionStateCounter.get(sas) / stateActionCounter.get(sa);
+			ret.put(sas, prob);
+		}
+		return ret;
+	}
+
+	private State argmin(Map<StateActionState, Double> pTilde) {
+		double value = Double.MAX_VALUE;
+		State min = null;
+		double tmpValue;
+		
+		for(StateActionState sas : pTilde.keySet()){
+			State s = sas.getSprime();
+			if(pTilde.get(sas) > 0){
+				tmpValue = vUpper(s);
+				if(tmpValue < value){
+					value = tmpValue;
+					min = s;
+				}
+			}
+		}
+		return min;
+	}
+	
+	private State argmax(List<State> sPrimes, Map<StateActionState, Double> pTilde) {
+		double value = Double.MIN_VALUE;
+		State max = null;
+		double tmpValue;
+		for(StateActionState sas : pTilde.keySet()){
+			State s = sas.getSprime();
+			if(sPrimes.contains(s) && pTilde.get(sas) < 1){
+				tmpValue = vUpper(s);
+				if(tmpValue > value){
+					value = tmpValue;
+					max = s;
+				}
+			}
+		}
+		return max;
+	}
+	
+	private double vUpper(State s){
+		DoubleTuple vs = values.get(s);
+		if(vs == null){
+			return vMax;
+		} else {
+			return vs.getSecond();
+		}
+	}
+	
+	private double vLower(State s){
+		DoubleTuple vs = values.get(s);
+		if(vs == null){
+			return 0;
+		} else {
+			return vs.getFirst();
+		}
+	}
+
 	private double pRoof(State sprime, StateAction sa){
 		return stateActionStateCounter.get(new StateActionState(sa, sprime)) / stateActionCounter.get(sa);
 	}
@@ -252,8 +331,8 @@ public class DDV implements AgentInterface {
 	}
 
 	private class DoubleTuple {
-		double fst;
-		double snd;
+		private double fst;
+		private double snd;
 
 		public DoubleTuple(double first, double second) {
 			fst = first;
