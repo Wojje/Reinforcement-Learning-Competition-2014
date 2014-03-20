@@ -13,6 +13,10 @@ public class StateActionState extends StateAction {
 		super(sa);
 		this.sprime = sprime;
 	}
+	
+	public State getSprime() {
+		return sprime;
+	}
 
 	@Override
 	public int hashCode() {
