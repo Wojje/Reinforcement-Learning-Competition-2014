@@ -1,9 +1,11 @@
 package agent;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.rlcommunity.rlglue.codec.AgentInterface;
 import org.rlcommunity.rlglue.codec.taskspec.TaskSpec;
@@ -15,14 +17,14 @@ import org.rlcommunity.rlglue.codec.types.Observation;
 public class DDV implements AgentInterface {
 
 	private double accuracy = 0.001; // Proper value?
-	private double upperConf = 0.001; // Woot?
-	private double lowerConf = 0.001, 
-				   my_upper = 0.001; // Woot?
+	private double conf = 0.001, // Woot?
+				   mu_upper = 0.001; // Woot?
 
 	private double gamma = 1.0; // Decay of rewards
 
 	private List<State> observedStates;
-	private Map<StateAction, State> observedStateTrans;
+	private Map<StateAction, Set<State>> observedStateTrans;
+	private Map<StateActionState, Integer> stateActionStateCounter;
 	private Map<StateAction, Integer> stateActionCounter;
 	private Map<StateAction, Double> observedRewards;
 	
@@ -75,9 +77,10 @@ public class DDV implements AgentInterface {
 		Rroof = maxRew * 0.5;
 
 		observedRewards = new HashMap<StateAction, Double>();
-		observedStateTrans = new HashMap<StateAction, State>();
+		observedStateTrans = new HashMap<StateAction, Set<State>>();
 		observedStates = new LinkedList<State>();
 		stateActionCounter = new HashMap<StateAction, Integer>();
+		stateActionStateCounter = new HashMap<StateActionState, Integer>();
 		
 		values = new HashMap<Integer, DoubleTuple>();
 
@@ -105,7 +108,8 @@ public class DDV implements AgentInterface {
 		State sprime = new State(o);
 		observedStates.add(new State(o));
 		observedRewards.put(lastStateAction, r);
-		observedStateTrans.put(lastStateAction, sprime);
+		updateObservedStateTrans(lastStateAction, sprime);
+		updateStateActionStateCounter(new StateActionState(lastStateAction, sprime));
 		
 		
 		
@@ -126,7 +130,7 @@ public class DDV implements AgentInterface {
 				StateAction sa = new StateAction(s, act);
 				DoubleTuple qprime = computeQPrime(sa);
 				double deltaQ = deltaDoubles(qprime);
-				double deltaV = my_upper*deltaQ;
+				double deltaV = mu_upper*deltaQ;
 				if (deltaV < minDeltaV)
 					nextAction = act; //(s,a) = argmin_(s,a) deltaV(s_0|s,a)
 					minDeltaV = deltaV;
@@ -143,6 +147,25 @@ public class DDV implements AgentInterface {
 		return null;
 	}
 	
+	private void updateObservedStateTrans(StateAction lastStateAction, State sprime) {
+		Set<State> sass = observedStateTrans.get(lastStateAction);
+		if(sass == null){
+			sass = new HashSet<State>();
+			observedStateTrans.put(lastStateAction, sass);
+		}
+		sass.add(sprime);	
+	}
+
+	private void updateStateActionStateCounter(StateActionState sas) {
+		if (stateActionStateCounter.containsKey(sas)) {
+			stateActionStateCounter.put(
+					sas, 
+					stateActionStateCounter.get(sas) + 1);
+		} else {
+			stateActionStateCounter.put(sas, 1);
+		}
+	}
+
 	private void updateStateActionCounter(StateAction sa) {
 		if (stateActionCounter.containsKey(sa)) {
 			stateActionCounter.put(
@@ -195,6 +218,37 @@ public class DDV implements AgentInterface {
 	
 	private void updateMY_upper(){
 		// Equation 8
+	}
+	
+	
+	private Map<StateActionState, Double> upperP(StateAction sa){
+		int nsa = stateActionCounter.get(sa);
+		double deltaOmega = delta(nsa)/2;
+		
+		List<State> sPrimes = new LinkedList<State>();
+		for(State sprime : observedStateTrans.get(sa)){
+			if( pRoof(sprime, sa) < 1){
+				sPrimes.add(sprime);
+			}
+		}
+		
+		Map<StateActionState, Double> pTilde = new HashMap<StateActionState, Double>(); 
+		while( deltaOmega > 0){
+			
+			State s_ = argmin()
+			
+			
+		}
+		
+		return 0;
+	}
+	
+	private double pRoof(State sprime, StateAction sa){
+		return stateActionStateCounter.get(new StateActionState(sa, sprime)) / stateActionCounter.get(sa);
+	}
+
+	private double delta(int nda) {
+		return Math.sqrt( ( 2 * Math.log(  Math.pow(2, observedStates.size()) -2) - Math.log(conf) ) / nda );
 	}
 
 	private class DoubleTuple {
