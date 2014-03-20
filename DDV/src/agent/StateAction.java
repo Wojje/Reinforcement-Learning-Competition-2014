@@ -9,6 +9,10 @@ public class StateAction {
 		state = s;
 		action = a;
 	}
+	
+	public StateAction(StateAction sa){
+		this(sa.state, sa.action);
+	}
 
 	@Override
 	public int hashCode() {
