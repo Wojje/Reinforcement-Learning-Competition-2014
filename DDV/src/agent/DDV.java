@@ -221,7 +221,39 @@ public class DDV implements AgentInterface {
 		// Equation 8
 	}
 	
+	private double qUpper(StateAction sa){
+		
+		Map<StateActionState, Double> pTildes = upperP(sa);
+		Map<State, Double> vals = new HashMap<State, Double>();
+		for(StateAction sa2 : observedStateTrans.keySet()){
+			Double d = vals.get(sa2.getState());
+			double val = (d == null ? Double.MIN_VALUE : d );
+			DoubleTuple q = qs.get(sa);
+			double tmp = (q == null ? vMax : q.getSecond()); 
+			if(tmp > val){
+				vals.put(sa2.getState(), tmp);
+			}
+		}
+		double sum = 0;
+		for(State s : vals.keySet()){
+			double val = vals.get(s);
+			sum += pTildes.get(new StateActionState(sa, s)) * Math.max(val, vMax);
+		}
+		return obsRew(sa) + gamma*sum;
+		
+		
+	}
 	
+	
+	private double obsRew(StateAction sa) {
+		Double d = observedRewards.get(sa);
+		if(d == null){
+			return 0;
+		} else {
+			return d;
+		}
+	}
+
 	private Map<StateActionState, Double> upperP(StateAction sa){
 		int nsa = stateActionCounter.get(sa);
 		double deltaOmega = delta(nsa)/2;
@@ -235,7 +267,6 @@ public class DDV implements AgentInterface {
 				sPrimes.add(sas.getSprime());
 			}
 		}
-		
 		
 		while( deltaOmega > 0){
 			
@@ -263,10 +294,20 @@ public class DDV implements AgentInterface {
 		double prob;
 		for(State s : observedStates){
 			StateActionState sas = new StateActionState(sa, s);
-			prob = stateActionStateCounter.get(sas) / stateActionCounter.get(sa);
+			prob = getCount(sas) / getCount(sa);
 			ret.put(sas, prob);
 		}
 		return ret;
+	}
+
+	private Integer getCount(StateAction sa) {
+		Integer i = stateActionCounter.get(sa);
+		return i == null ? 0 : i;
+	}
+
+	private Integer getCount(StateActionState sas) {
+		Integer i = stateActionStateCounter.get(sas);
+		return i == null ? 0 : i;
 	}
 
 	private State argmin(Map<StateActionState, Double> pTilde) {
@@ -320,10 +361,6 @@ public class DDV implements AgentInterface {
 		} else {
 			return vs.getFirst();
 		}
-	}
-
-	private double pRoof(State sprime, StateAction sa){
-		return stateActionStateCounter.get(new StateActionState(sa, sprime)) / stateActionCounter.get(sa);
 	}
 
 	private double delta(int nda) {

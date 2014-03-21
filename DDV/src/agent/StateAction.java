@@ -14,6 +14,12 @@ public class StateAction {
 		this(sa.state, sa.action);
 	}
 
+	public State getState() {
+		return state;
+	}
+	
+	
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
