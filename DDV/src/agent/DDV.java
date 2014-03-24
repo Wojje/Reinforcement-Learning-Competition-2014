@@ -16,11 +16,20 @@ import org.rlcommunity.rlglue.codec.types.Observation;
 
 public class DDV implements AgentInterface {
 
-	private double accuracy = 0.001; // Proper value?
-	private double conf = 0.001, // Woot?
-				   mu_upper = 0.001; // Woot?
 
-	private double gamma = 1.0; // Decay of rewards
+	private int obsRangeMin,obsRangeMax, actRangeMin, actRangeMax;
+	private double maxRew, minRew, vMax;
+	
+	private State stateZero;
+	
+	private StateAction lastStateAction;
+
+	private double accuracy = 0.001; // Proper value?
+	private double conf = 0.001; // Woot?
+
+	private double gamma = 0.1; // Decay of rewards
+	
+	private double convergenceFactor = 0.001;
 
 	private List<State> observedStates;
 	private Map<StateAction, Set<State>> observedStateTrans;
@@ -28,27 +37,26 @@ public class DDV implements AgentInterface {
 	private Map<StateAction, Integer> stateActionCounter;
 	private Map<StateAction, Double> observedRewards;
 	
-	private Map<State, DoubleTuple> values;
-
-	private Map<StateAction, DoubleTuple> qs;
-
-	private int obsRangeMin,obsRangeMax, actRangeMin, actRangeMax;
-	private double maxRew, minRew, Rroof, vMax;
-
-	private StateAction lastStateAction;
-
+	private Map<StateAction, Double> qUppers;
+	private Map<StateAction, Double> qLowers;
+	private Map<State, Double> vUppers;
+	private Map<State, Double> vLowers;
+	private Map<State, Double> muUppers;
+	
+	
+	
+	
+	
 	@Override
 	public void agent_cleanup() {
 		// TODO Auto-generated method stub
-		
 	}
-
 	@Override
 	public void agent_end(double reward) {
 		// TODO Auto-generated method stub
-
 	}
-
+	
+	
 	@Override
 	public void agent_init(String taskSpec) {
 		TaskSpec theTaskSpec = new TaskSpec(taskSpec);
@@ -74,7 +82,7 @@ public class DDV implements AgentInterface {
 		obsRangeMin = theObsRange.getMin();
 		maxRew = theRewardRange.getMax();
 		minRew = theRewardRange.getMin();
-		Rroof = maxRew * 0.5;
+		
 		vMax = maxRew / (1-gamma);
 
 		observedRewards = new HashMap<StateAction, Double>();
@@ -83,27 +91,30 @@ public class DDV implements AgentInterface {
 		stateActionCounter = new HashMap<StateAction, Integer>();
 		stateActionStateCounter = new HashMap<StateActionState, Integer>();
 		
-		values = new HashMap<State, DoubleTuple>();
-
+		
+		qUppers = new HashMap<StateAction, Double>();
+		qLowers = new HashMap<StateAction, Double>();
+		vUppers = new HashMap<State, Double>();
+		vLowers = new HashMap<State, Double>();
+		muUppers = new HashMap<State, Double>();
 	}
-
+	
 	@Override
 	// What is this shit?
 	public String agent_message(String arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+	
+	
 	@Override
 	public Action agent_start(Observation o) {
-
-		observedStates.add(new State(o));
-		
+		stateZero = new State(o);
+		observedStates.add(stateZero);
 		//do action?
-
 		return null;
 	}
-
+	
 	@Override
 	public Action agent_step(double r, Observation o) {
 		State sprime = new State(o);
@@ -111,34 +122,38 @@ public class DDV implements AgentInterface {
 		observedRewards.put(lastStateAction, r);
 		updateObservedStateTrans(lastStateAction, sprime);
 		updateStateActionStateCounter(new StateActionState(lastStateAction, sprime));
+
+		updateQUpper();
+		updateQLower();
+		updateMuUpper();
 		
-		
-		
-		//Do update (line 1 in pseudo
-		update();
-		
-		if(valueDeltaSatisfactory()){
+		if(vUppers.get(stateZero) - vLowers.get(stateZero) <= accuracy) {
 			computePolicy();
 		} 
 		
 		ActionStep nextAction = null;
-		double minDeltaV = Double.POSITIVE_INFINITY; 
+		double minDeltaDeltaV = Double.POSITIVE_INFINITY;
+		double qPrimeUpper;
+		double qPrimeLower;
 		
 		for(State s : observedStates){
 			for(int a = actRangeMin; a <= actRangeMax; a++){
 				ActionStep act = new ActionStep(new Action(1,0,0));
 				act.setInt(0, a);
 				StateAction sa = new StateAction(s, act);
-				DoubleTuple qprime = computeQPrime(sa);
-				double deltaQ = deltaDoubles(qprime);
-				double deltaV = mu_upper*deltaQ;
-				if (deltaV < minDeltaV)
+				
+				qPrimeUpper = computeQPrimeUpper(sa);
+				qPrimeLower = computeQPrimeLower(sa);
+
+				double deltaDeltaQ = (qUppers.get(sa) - qLowers.get(sa)) 
+									- (qPrimeUpper - qPrimeLower);
+				double deltaDeltaV = muUppers.get(sa)*deltaDeltaQ;
+				
+				if (deltaDeltaV < minDeltaDeltaV)
 					nextAction = act; //(s,a) = argmin_(s,a) deltaV(s_0|s,a)
-					minDeltaV = deltaV;
+					minDeltaDeltaV = deltaDeltaV;
 			}
 		}
-		
-		
 		
 		StateAction lastStateAction = new StateAction(sprime, nextAction);
 		
@@ -148,6 +163,11 @@ public class DDV implements AgentInterface {
 		return null;
 	}
 	
+	
+	
+	
+	
+	
 	private void updateObservedStateTrans(StateAction lastStateAction, State sprime) {
 		Set<State> sass = observedStateTrans.get(lastStateAction);
 		if(sass == null){
@@ -155,16 +175,6 @@ public class DDV implements AgentInterface {
 			observedStateTrans.put(lastStateAction, sass);
 		}
 		sass.add(sprime);	
-	}
-
-	private void updateStateActionStateCounter(StateActionState sas) {
-		if (stateActionStateCounter.containsKey(sas)) {
-			stateActionStateCounter.put(
-					sas, 
-					stateActionStateCounter.get(sas) + 1);
-		} else {
-			stateActionStateCounter.put(sas, 1);
-		}
 	}
 
 	private void updateStateActionCounter(StateAction sa) {
@@ -177,86 +187,81 @@ public class DDV implements AgentInterface {
 		}
 	}
 	
-
-	private DoubleTuple computeQPrime(StateAction sa) {
-		if (observedStateTrans.containsKey(sa)) {
-			// Case 2 i artikeln
-			return new DoubleTuple(1337.0, 42.0);
+	private void updateStateActionStateCounter(StateActionState sas) {
+		if (stateActionStateCounter.containsKey(sas)) {
+			stateActionStateCounter.put(
+					sas, 
+					stateActionStateCounter.get(sas) + 1);
 		} else {
-			return new DoubleTuple(Rroof + gamma * maxRew / (1 - gamma), Rroof);
+			stateActionStateCounter.put(sas, 1);
 		}
-
-	}
-
-	private double deltaDoubles(DoubleTuple dt) {
-		// Abs?
-		return dt.getFirst() - dt.getSecond();
-	}
-
-	// Should this be without params?
-	private boolean valueDeltaSatisfactory() {
-
-		return true;
-	}
-
-	private void computePolicy() {
-		// TODO Auto-generated method stubs
-
-	}
-
-	private void update() {
-		// Eqution 3,4 and 8.
-		updateQ_upper();
 	}
 	
-	private void updateQ_upper(){
-		// Equation 3
+	private void updateQUpper(){
+		iterateQ(true);
 	}
 	
-	private void updateQ_lower(){
-		// Equation 4
+	private void updateQLower(){
+		iterateQ(false);
+
 	}
-	
-	private void updateMY_upper(){
+		
+	private void updateMuUpper(){
 		// Equation 8
 	}
 	
-	private double qUpper(StateAction sa){
-		
-		Map<StateActionState, Double> pTildes = upperP(sa);
-		Map<State, Double> vals = new HashMap<State, Double>();
-		for(StateAction sa2 : observedStateTrans.keySet()){
-			Double d = vals.get(sa2.getState());
-			double val = (d == null ? Double.MIN_VALUE : d );
-			DoubleTuple q = qs.get(sa);
-			double tmp = (q == null ? vMax : q.getSecond()); 
-			if(tmp > val){
-				vals.put(sa2.getState(), tmp);
+	private boolean iterateQ(boolean upper) {
+		boolean converged = false;
+		for(StateAction sa : observedStateTrans.keySet()){
+			double tmp = upper ? qUppers.get(sa) : qLowers.get(sa);
+			if (Math.abs(tmp - updateQ(sa, upper)) < convergenceFactor) {
+				converged = true;
 			}
+			else {
+				converged = false;
+			}
+		}
+		return converged;
+	}
+	
+	private double updateQ(StateAction sa, boolean upper){
+		// Equation 3 and 4
+		double tmp;
+		Map<StateActionState, Double> pTildes = computePTildes(sa, true);
+		Map<State, Double> vals = new HashMap<State, Double>();
+		for(StateAction saPrime : observedStateTrans.keySet()){
+			Double d = vals.get(saPrime.getState());
+			double val = (d == null ? Double.MIN_VALUE : d );
+			if(upper) {
+				Double q = qUppers.get(sa);
+				tmp = (q == null ? vMax : q); 
+			}
+			else {
+				Double q = qLowers.get(sa);
+				tmp = (q == null ? vMax : q); 
+			}
+			
+			if(tmp > val){
+				vals.put(saPrime.getState(), tmp);
+			}			
+			
 		}
 		double sum = 0;
 		for(State s : vals.keySet()){
-			double val = vals.get(s);
-			sum += pTildes.get(new StateActionState(sa, s)) * Math.max(val, vMax);
+				double val = vals.get(s);
+				sum+= pTildes.get(new StateActionState(sa, s)) * Math.max(val, vMax);
+			}
+		if(upper) {
+			return qUppers.put(sa, obsRew(sa) + gamma*sum);
 		}
-		return obsRew(sa) + gamma*sum;
-		
-		
-	}
-	
-	
-	private double obsRew(StateAction sa) {
-		Double d = observedRewards.get(sa);
-		if(d == null){
-			return 0;
-		} else {
-			return d;
+		else {
+			return qLowers.put(sa, obsRew(sa) + gamma*sum);
 		}
 	}
-
-	private Map<StateActionState, Double> upperP(StateAction sa){
+	
+	private Map<StateActionState, Double> computePTildes(StateAction sa, boolean upper){
 		int nsa = stateActionCounter.get(sa);
-		double deltaOmega = delta(nsa)/2;
+		double deltaOmega = omega(nsa)/2;
 		
 		Map<StateActionState, Double> pRoof = createPRoof(sa);
 		Map<StateActionState, Double> pTilde = new HashMap<StateActionState, Double>(pRoof);
@@ -270,11 +275,11 @@ public class DDV implements AgentInterface {
 		
 		while( deltaOmega > 0){
 			
-			StateActionState sasFloor = new StateActionState(sa, argmin(pTilde));
-			StateActionState sasRoof = new StateActionState(sa, argmax(sPrimes, pTilde));
+			StateActionState sasFloor = new StateActionState(sa, argmin(pTilde, upper));
+			StateActionState sasRoof = new StateActionState(sa, argmax(sPrimes, pTilde, upper));
 			double sasrval = 1-pTilde.get(sasRoof);
 			double sasfval = pTilde.get(sasFloor);
-			double zeta = least(sasrval, sasfval, deltaOmega);
+			double zeta = Math.min(Math.min(sasrval, sasfval), deltaOmega);
 			pTilde.put(sasFloor, sasfval - zeta);
 			pTilde.put(sasRoof, sasrval + zeta);
 			deltaOmega = deltaOmega - zeta;
@@ -283,12 +288,71 @@ public class DDV implements AgentInterface {
 		return pTilde;
 	}
 	
-	
-	
-	private double least(double d, double d2, double d3) {
-		return Math.min(Math.min(d,d2), d3);
+	private State argmin(Map<StateActionState, Double> pTilde, boolean upper) {
+		double value = Double.MAX_VALUE;
+		State min = null;
+		Double tmpValue;
+		
+		for(StateActionState sas : pTilde.keySet()){
+			State s = sas.getSprime();
+			if(pTilde.get(sas) > 0){
+				if(upper) {
+					tmpValue = vUppers.get(s);
+				}
+				else {
+					tmpValue = vLowers.get(s);
+				}
+				if (tmpValue == null) {
+					if (upper) {
+						tmpValue = vMax;
+					}
+					else {
+						tmpValue = 0.0;
+					}
+				}
+				if(tmpValue < value){
+					value = tmpValue;
+					min = s;
+				}
+			}
+		}
+		return min;
 	}
-
+	
+	private State argmax(List<State> sPrimes, Map<StateActionState, Double> pTilde, boolean upper) {
+		double value = Double.MIN_VALUE;
+		State max = null;
+		Double tmpValue;
+		for(StateActionState sas : pTilde.keySet()){
+			State s = sas.getSprime();
+			if(sPrimes.contains(s) && pTilde.get(sas) < 1){
+				if(upper) {
+					tmpValue = vUppers.get(s);
+				}
+				else {
+					tmpValue = vLowers.get(s);
+				}
+				if (tmpValue == null) {
+					if (upper) {
+						tmpValue = vMax;
+					}
+					else {
+						tmpValue = 0.0;
+					}
+				}
+				if(tmpValue > value){
+					value = tmpValue;
+					max = s;
+				}
+			}
+		}
+		return max;
+	}
+	
+	private double omega(int nsa) {
+		return Math.sqrt( ( 2 * Math.log(  Math.pow(2, observedStates.size()) -2) - Math.log(conf) ) / nsa );
+	}
+	
 	private Map<StateActionState, Double> createPRoof(StateAction sa) {
 		Map<StateActionState, Double> ret = new HashMap<StateActionState, Double>();
 		double prob;
@@ -299,7 +363,7 @@ public class DDV implements AgentInterface {
 		}
 		return ret;
 	}
-
+	
 	private Integer getCount(StateAction sa) {
 		Integer i = stateActionCounter.get(sa);
 		return i == null ? 0 : i;
@@ -309,80 +373,36 @@ public class DDV implements AgentInterface {
 		Integer i = stateActionStateCounter.get(sas);
 		return i == null ? 0 : i;
 	}
-
-	private State argmin(Map<StateActionState, Double> pTilde) {
-		double value = Double.MAX_VALUE;
-		State min = null;
-		double tmpValue;
-		
-		for(StateActionState sas : pTilde.keySet()){
-			State s = sas.getSprime();
-			if(pTilde.get(sas) > 0){
-				tmpValue = vUpper(s);
-				if(tmpValue < value){
-					value = tmpValue;
-					min = s;
-				}
-			}
-		}
-		return min;
-	}
 	
-	private State argmax(List<State> sPrimes, Map<StateActionState, Double> pTilde) {
-		double value = Double.MIN_VALUE;
-		State max = null;
-		double tmpValue;
-		for(StateActionState sas : pTilde.keySet()){
-			State s = sas.getSprime();
-			if(sPrimes.contains(s) && pTilde.get(sas) < 1){
-				tmpValue = vUpper(s);
-				if(tmpValue > value){
-					value = tmpValue;
-					max = s;
-				}
-			}
-		}
-		return max;
-	}
-	
-	private double vUpper(State s){
-		DoubleTuple vs = values.get(s);
-		if(vs == null){
-			return vMax;
-		} else {
-			return vs.getSecond();
-		}
-	}
-	
-	private double vLower(State s){
-		DoubleTuple vs = values.get(s);
-		if(vs == null){
+	private double obsRew(StateAction sa) {
+		Double d = observedRewards.get(sa);
+		if(d == null){
 			return 0;
 		} else {
-			return vs.getFirst();
+			return d;
 		}
 	}
-
-	private double delta(int nda) {
-		return Math.sqrt( ( 2 * Math.log(  Math.pow(2, observedStates.size()) -2) - Math.log(conf) ) / nda );
-	}
-
-	private class DoubleTuple {
-		private double fst;
-		private double snd;
-
-		public DoubleTuple(double first, double second) {
-			fst = first;
-			snd = second;
-		}
-
-		public double getFirst() {
-			return fst;
-		}
-
-		public double getSecond() {
-			return snd;
+	
+	private void computePolicy() {
+		// TODO Auto-generated method stubs
+	}	
+	
+	private double computeQPrimeUpper(StateAction sa) {
+		if (observedStateTrans.containsKey(sa)) {
+			return observedRewards.get(sa) + gamma*maxRew/(1-gamma);
+		} else {
+			return maxRew/2 + gamma*maxRew/(1-gamma);
 		}
 	}
-
+	
+	private double computeQPrimeLower(StateAction sa) {
+		if (observedStateTrans.containsKey(sa)) {
+			return observedRewards.get(sa);
+		} else {
+			return maxRew/2;
+		}
+	}
+	
+	
+	
 }
