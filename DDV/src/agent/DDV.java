@@ -232,17 +232,18 @@ public class DDV implements AgentInterface {
 		// Equation 8
 	}
 	
-	private boolean iterateQ(boolean upper) {
+	private void iterateQ(boolean upper) {
 		boolean converged = false;
-		for (StateAction sa : observedStateTrans.keySet()) {
-			double tmp = upper ? qUppers.get(sa) : qLowers.get(sa);
-			if (Math.abs(tmp - updateQ(sa, upper)) < convergenceFactor) {
-				converged = true;
-			} else {
-				converged = false;
+		while(!converged) {
+			for (StateAction sa : observedStateTrans.keySet()) {
+				double tmp = upper ? qUppers.get(sa) : qLowers.get(sa);
+				if (Math.abs(tmp - updateQ(sa, upper)) < convergenceFactor) {
+					converged = true;
+				} else {
+					converged = false;
+				}
 			}
 		}
-		return converged;
 	}
 
 	private double updateQ(StateAction sa, boolean upper) {
