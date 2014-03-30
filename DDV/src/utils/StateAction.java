@@ -18,6 +18,10 @@ public class StateAction {
 		return state;
 	}
 	
+	public ActionStep getAction() {
+		return action;
+	}
+	
 	
 	
 	@Override
