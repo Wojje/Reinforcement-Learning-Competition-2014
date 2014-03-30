@@ -1,15 +1,15 @@
-package agent;
+package utils;
 
 import java.util.Arrays;
 
-import org.rlcommunity.rlglue.codec.types.Observation;
+import org.rlcommunity.rlglue.codec.types.Action;
 
-public class State extends Observation {
+public class ActionStep extends Action {
 	
-	public State(Observation o){
-		super(o);
+	public ActionStep(Action a){
+		super(a);
 	}
-
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
