@@ -28,7 +28,7 @@ public class ActionStep extends Action {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		State other = (State) obj;
+		ActionStep other = (ActionStep) obj;
 		if (!Arrays.equals(this.charArray, other.charArray))
 			return false;
 		if (!Arrays.equals(this.doubleArray, other.doubleArray))
