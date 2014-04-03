@@ -373,7 +373,7 @@ public class DDV implements AgentInterface {
 
 	private double omega(int nsa) {
 		return Math
-				.sqrt((2 * Math.log(Math.pow(2, observedStates.size()) - 2) - Math
+				.sqrt((2 * Math.log(Math.pow(2, obsRangeMax) - 2) - Math
 						.log(conf)) / nsa);
 	}
 
