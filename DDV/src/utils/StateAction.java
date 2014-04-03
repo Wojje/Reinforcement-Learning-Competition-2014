@@ -1,4 +1,4 @@
-package agent;
+package utils;
 
 public class StateAction {
 	
@@ -16,6 +16,10 @@ public class StateAction {
 
 	public State getState() {
 		return state;
+	}
+	
+	public ActionStep getAction() {
+		return action;
 	}
 	
 	

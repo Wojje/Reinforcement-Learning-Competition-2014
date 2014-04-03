@@ -14,6 +14,11 @@ import org.rlcommunity.rlglue.codec.taskspec.ranges.IntRange;
 import org.rlcommunity.rlglue.codec.types.Action;
 import org.rlcommunity.rlglue.codec.types.Observation;
 
+import utils.ActionStep;
+import utils.State;
+import utils.StateAction;
+import utils.StateActionState;
+
 public class DDV implements AgentInterface {
 
 	private int obsRangeMin, obsRangeMax, actRangeMin, actRangeMax;
