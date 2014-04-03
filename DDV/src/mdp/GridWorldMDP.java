@@ -1,6 +1,5 @@
-package test;
+package mdp;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,7 +9,6 @@ import org.rlcommunity.rlglue.codec.types.Observation;
 import utils.ActionStep;
 import utils.State;
 import utils.StateActionState;
-import mdp.MDP;
 
 /**
  * 
@@ -156,7 +154,6 @@ public class GridWorldMDP implements MDP {
 	@Override
 	public double probTransition(StateActionState sas) {
 		int place = sas.getState().getInt(0);
-		int status = sas.getState().getInt(1);
 		int futurePlace = sas.getSprime().getInt(0);
 		int futureStatus = sas.getSprime().getInt(1);
 		if(futureStatus != 1){	
@@ -183,8 +180,8 @@ public class GridWorldMDP implements MDP {
 	private int neighborDir(int place, int futurePlace) {
 		int pr = placeToRow(place);
 		int pc = placeToCol(place);
-		int fpr = placeToRow(place);
-		int fpc = placeToCol(place);		
+		int fpr = placeToRow(futurePlace);
+		int fpc = placeToCol(futurePlace);		
 		int rdiff = fpr - pr;
 		int cdiff = fpc - pc;
 		if(Math.abs(rdiff) == 1){
@@ -192,16 +189,16 @@ public class GridWorldMDP implements MDP {
 				return -1;
 			} else {
 				if(rdiff > 0){
-					return NORTH;
-				} else {
 					return SOUTH;
+				} else {
+					return NORTH;
 				}
 			}
 		} else if(Math.abs(cdiff) == 1){
 			if(Math.abs(rdiff) > 0){
 				return -1;
 			} else {
-				if(rdiff > 0){
+				if(cdiff > 0){
 					return EAST;
 				} else {
 					return WEST;
@@ -213,11 +210,11 @@ public class GridWorldMDP implements MDP {
 		
 	}
 
-	private int placeToRow(int place){
-		return place / world.length;
+	public int placeToRow(int place){
+		return place / (world[0].length);
 	}
 	
-	private int placeToCol(int place){
+	public int placeToCol(int place){
 		return place % (world[0].length);
 	}
 	
