@@ -224,8 +224,7 @@ public class GridWorldMDP implements MDP {
 	private boolean validPlace(int place){
 		int c = placeToCol(place);
 		int r = placeToRow(place);
-		return c > 0 && c < world[0].length &&
-				r > 0 && r < world.length;
+		return r >= 0 && r < world.length && c >= 0 && c < world[r].length;
 	}
 
 }
