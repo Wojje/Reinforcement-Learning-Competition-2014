@@ -100,6 +100,43 @@ public class GridWorldTest {
 	}
 	
 	@Test
+	public void testRewFunc(){
+		List<State> states = mdp.getStates();
+		List<ActionStep> as = mdp.getActions();
+		for(State s : states){
+			for(ActionStep a : as){
+				for(State sp : states){
+					int place = s.getInt(0);
+					int futurePlace = sp.getInt(0);
+					
+					if(place == futurePlace || place == 3 || place == 7){
+						continue;
+					}
+					
+					if(place == 2 && futurePlace == 3){
+						double rew = mdp.reward(s, sp);
+						assertEquals(1, rew, EPS);
+					} else if (place == 6 && futurePlace == 7){
+						double rew = mdp.reward(s, sp);
+						assertEquals(-1, rew, EPS);
+					} else if (place == 11 && futurePlace == 7){
+						double rew = mdp.reward(s, sp);
+						assertEquals(-1, rew, EPS);
+					} else {
+						double rew = mdp.reward(s, sp);
+						System.out.println("p: " + place +" fp: " + futurePlace + " rew: "+rew);
+						assertEquals(0, rew, EPS);
+					}
+					
+					
+				}
+			}
+		}
+		
+	}
+
+	
+	@Test
 	public void testProbFunc(){
 		List<ActionStep> as = mdp.getActions();
 		List<State> states = mdp.getStates();
@@ -160,8 +197,8 @@ public class GridWorldTest {
 	
 	private void testProbCase(State s, ActionStep as, State sprime, double expec){
 		StateActionState sas = new StateActionState(s, as, sprime);
-		System.out.println(mdp.probTransition(sas));
-		System.out.println("S:p "+s.getInt(0) + " A: "+ as.getInt(0) + " S':p "+sprime.getInt(0));
+//		System.out.println(mdp.probTransition(sas));
+//		System.out.println("S:p "+s.getInt(0) + " A: "+ as.getInt(0) + " S':p "+sprime.getInt(0));
 		assertEquals(expec, mdp.probTransition(sas), EPS);
 //		assertTrue(true);
 	}
