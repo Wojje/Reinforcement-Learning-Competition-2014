@@ -12,7 +12,7 @@ public interface MDP {
 	public List<State> getStates();
 	public List<ActionStep> getActions();
 	public double probTransition(StateActionState sas);
-	public double reward(State s, State sprime);
+	public double reward(State s/*, State sprime*/);
 	
 	
 	
