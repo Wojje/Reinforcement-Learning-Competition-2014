@@ -120,13 +120,27 @@ public class GridWorldMDP implements MDP {
 		}
 		return actions;
 	}
-
+/*
 	@Override
 	public double reward(State s, State sprime) {
 		int place = s.getInt(0);
 		int futurePlace = sprime.getInt(0);
 		if(validPlace(futurePlace) && neighborDir(place, futurePlace) != -1){
 			int val = sprime.getInt(1);
+			if(val == GWorldStates.WIN.VALUE){
+				return reward;
+			} else if (val == GWorldStates.DEATH.VALUE){
+				return deathRew;
+			}
+		}
+		return 0;
+	}
+	*/
+	@Override
+	public double reward(State s) {
+		int place = s.getInt(0);
+		if(validPlace(place)) {
+			int val = s.getInt(1);
 			if(val == GWorldStates.WIN.VALUE){
 				return reward;
 			} else if (val == GWorldStates.DEATH.VALUE){
