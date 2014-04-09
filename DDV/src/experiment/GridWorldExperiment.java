@@ -54,10 +54,10 @@ public class GridWorldExperiment {
 		for (int i = 0; i < 100; i++) {
 			
 			
-			action = ConfidenceIntervalAlgorithm.agent_step(mdp.reward(currentState), currentState);
+			/*action = ConfidenceIntervalAlgorithm.agent_step(mdp.reward(currentState), currentState);
 			
 			currentState = GenerateNextState(currentState, action);
-			
+			*/
 			if (currentState.getInt(1) == 4) {
 				return i;
 			}

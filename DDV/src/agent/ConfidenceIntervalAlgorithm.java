@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.rlcommunity.rlglue.codec.AgentInterface;
@@ -19,7 +20,7 @@ import utils.State;
 import utils.StateAction;
 import utils.StateActionState;
 
-public class ConfidenceIntervalAlgorithm {
+public class ConfidenceIntervalAlgorithm implements AgentInterface{
 
 	private int obsRangeMin;
 	private static int obsRangeMax;
@@ -50,6 +51,8 @@ public class ConfidenceIntervalAlgorithm {
 	private static Map<State, Double> vUppers;
 	private static Map<State, Double> vLowers;
 	private Map<State, Double> muUppers;
+	
+	private Random randGenerator = new Random();
 
 	
 	public void agent_cleanup() {
@@ -110,11 +113,13 @@ public class ConfidenceIntervalAlgorithm {
 	public Action agent_start(Observation o) {
 		stateZero = new State(o);
 		observedStates.add(stateZero);
-		// do action?
-		return null;
+		int theIntAction = randGenerator.nextInt(actRangeMax-1);
+        Action bestAction = new Action(1, 0, 0);
+        bestAction.intArray[0] = theIntAction;
+		return bestAction;
 	}
-
-	public static Action agent_step(double r, Observation o) {
+	
+	public Action agent_step(double r, Observation o) {
 		State sprime = new State(o);
 		observedStates.add(new State(o));
 		observedRewards.put(lastStateAction, r);
@@ -126,10 +131,26 @@ public class ConfidenceIntervalAlgorithm {
 		updateVLower();
 		
 
+		int theIntAction = randGenerator.nextInt(actRangeMax-1);
+        Action bestAction = new Action(1, 0, 0);
+        bestAction.intArray[0] = theIntAction;
 
+		double bestValue = Double.MIN_VALUE;
 		// increment N(s,a) counter
+        for (StateAction sa : qUppers.keySet()) {
+        	if (sa.getState() == sprime) {
+        		double value = qUppers.get(sa);
+        		if (value > bestValue) {
+        			bestAction = sa.getAction();
+        			bestValue = value;
+        		}
+        	}
+        }
 
-		return null; //return chosen action
+        
+		
+
+		return bestAction; //return chosen action
 	}
 
 	private static void updateObservedStateTrans(StateAction lastStateAction,
