@@ -120,7 +120,7 @@ public class GridWorldMDP implements MDP {
 		}
 		return actions;
 	}
-/*
+
 	@Override
 	public double reward(State s, State sprime) {
 		int place = s.getInt(0);
@@ -135,7 +135,8 @@ public class GridWorldMDP implements MDP {
 		}
 		return 0;
 	}
-	*/
+	
+	/*
 	@Override
 	public double reward(State s) {
 		int place = s.getInt(0);
@@ -148,7 +149,7 @@ public class GridWorldMDP implements MDP {
 			}
 		}
 		return 0;
-	}
+	}*/
 
 	@Override
 	public State getStartingState() {
