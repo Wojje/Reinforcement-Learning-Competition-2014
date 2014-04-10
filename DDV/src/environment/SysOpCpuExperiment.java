@@ -69,10 +69,6 @@ public class SysOpCpuExperiment {
 
         System.out.println("\n\n----------Running a few episodes----------");
         runEpisode(100);
-        runEpisode(100);
-        runEpisode(100);
-        runEpisode(100);
-        runEpisode(100);
         runEpisode(1);
         /* Remember that stepLimit of 0 means there is no limit at all!*/
         runEpisode(0);

@@ -16,30 +16,6 @@ import agent.ConfidenceIntervalAlgorithm;
 import mdp.GridWorldMDP;
 
 public class GridWorldExperiment {
-	
-	private int obsRangeMin, obsRangeMax, actRangeMin, actRangeMax;
-	private double maxRew, minRew, vMax;
-
-	private State stateZero;
-
-	private StateAction lastStateAction;
-
-	private double accuracy = 0.001; // Proper value?
-	private double conf = 0.001; // Woot?
-
-	private double gamma = 0.1; // Decay of rewards
-
-	private double convergenceFactor = 0.001;
-	
-	private List<State> observedStates;
-	private Map<StateAction, Set<State>> observedStateTrans;
-	private Map<StateAction, Double> observedRewards;
-
-	private Map<StateAction, Double> qUppers;
-	private Map<StateAction, Double> qLowers;
-	private Map<State, Double> vUppers;
-	private Map<State, Double> vLowers;
-	
 	private static GridWorldMDP mdp;
 	private static State currentState;
 

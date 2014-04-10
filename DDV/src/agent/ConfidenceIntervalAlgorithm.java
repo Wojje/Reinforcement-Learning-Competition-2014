@@ -33,12 +33,12 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface{
 
 	private static StateAction lastStateAction;
 
-	private double accuracy = 0.001; // Proper value?
-	private static double conf = 0.001; // Woot?
+	private double accuracy = 0.1; // Proper value?
+	private static double conf = 0.05; // Woot?
 
 	private static double gamma = 0.1; // Decay of rewards
 
-	private static double convergenceFactor = 0.001;
+	private static double convergenceFactor = 10.0;
 
 	private static List<State> observedStates;
 	private static Map<StateAction, Set<State>> observedStateTrans;
@@ -56,7 +56,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface{
 
 	
 	public void agent_cleanup() {
-		// TODO Auto-generated method stub
+		lastStateAction = null;
 	}
 
 	
@@ -67,7 +67,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface{
 	
 	public void agent_init(String taskSpec) {
 		TaskSpec theTaskSpec = new TaskSpec(taskSpec);
-		System.out.println("DDV agent parsed the task spec.");
+		System.out.println("CI agent parsed the task spec.");
 		System.out.println("Observation have "
 				+ theTaskSpec.getNumDiscreteObsDims() + " integer dimensions");
 		System.out.println("Actions have "
@@ -113,7 +113,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface{
 	public Action agent_start(Observation o) {
 		stateZero = new State(o);
 		observedStates.add(stateZero);
-		int theIntAction = randGenerator.nextInt(actRangeMax-1);
+		int theIntAction = randGenerator.nextInt(2);
         Action bestAction = new Action(1, 0, 0);
         bestAction.intArray[0] = theIntAction;
 		return bestAction;
@@ -148,6 +148,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface{
         }
 
         
+        lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
 		
 
 		return bestAction; //return chosen action
@@ -229,7 +230,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface{
 	private static void iterateQ(boolean upper) {
 		boolean converged = false;
 		while(!converged) {
-			for (StateAction sa : observedStateTrans.keySet()) {
+			for (StateAction sa : qUppers.keySet()) {
 				double tmp = upper ? qUppers.get(sa) : qLowers.get(sa);
 				if (Math.abs(tmp - updateQ(sa, upper)) < convergenceFactor) {
 					converged = true;
