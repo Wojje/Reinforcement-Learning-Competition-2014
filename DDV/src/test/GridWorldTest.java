@@ -19,7 +19,7 @@ public class GridWorldTest {
 
 	@Before
 	public void setUp() throws Exception {
-		mdp = new GridWorldMDP(1, -1, 0.8);
+		mdp = new GridWorldMDP(1, -1,  -0.01, 0.8);
 	
 	}
 
@@ -107,7 +107,7 @@ public class GridWorldTest {
 		for(State s : states){
 			for(ActionStep a : as){
 				
-				double rew = mdp.rewardSingleState(s);
+				double rew = mdp.reward(s);
 				if(s.getInt(0) == 3){
 					assertEquals(1, rew, EPS);
 				} else if (s.getInt(0) == 7){
@@ -136,16 +136,16 @@ public class GridWorldTest {
 					}
 					
 					if(place == 2 && futurePlace == 3){
-						double rew = mdp.rewardTwoStates(s, sp);
+						double rew = mdp.reward(s, sp);
 						assertEquals(1, rew, EPS);
 					} else if (place == 6 && futurePlace == 7){
-						double rew = mdp.rewardTwoStates(s, sp);
+						double rew = mdp.reward(s, sp);
 						assertEquals(-1, rew, EPS);
 					} else if (place == 11 && futurePlace == 7){
-						double rew = mdp.rewardTwoStates(s, sp);
+						double rew = mdp.reward(s, sp);
 						assertEquals(-1, rew, EPS);
 					} else {
-						double rew = mdp.rewardTwoStates(s, sp);
+						double rew = mdp.reward(s, sp);
 						System.out.println("p: " + place +" fp: " + futurePlace + " rew: "+rew);
 						assertEquals(0, rew, EPS);
 					}
@@ -172,10 +172,10 @@ public class GridWorldTest {
 		 */
 		
 		// (0,0)
-		testProbCase(states.get(0), as.get(0), states.get(0), 0.8);
+		testProbCase(states.get(0), as.get(0), states.get(0), 0.9);
 		testProbCase(states.get(0), as.get(1), states.get(1), 0.1);
 		testProbCase(states.get(0), as.get(1), states.get(0), 0.0);
-		testProbCase(states.get(0), as.get(2), states.get(0), 0.8);
+		testProbCase(states.get(0), as.get(2), states.get(0), 0.9);
 		testProbCase(states.get(0), as.get(3), states.get(1), 0.8);
 		testProbCase(states.get(0), as.get(3), states.get(4), 0.1);
 		
@@ -188,7 +188,7 @@ public class GridWorldTest {
 		testProbCase(states.get(1), as.get(1), states.get(2), 0.1);
 		testProbCase(states.get(1), as.get(2), states.get(0), 0.8);
 		testProbCase(states.get(1), as.get(2), states.get(5), 0.0);
-		testProbCase(states.get(1), as.get(2), states.get(1), 0.0);
+		testProbCase(states.get(1), as.get(2), states.get(1), 0.1);
 		testProbCase(states.get(1), as.get(3), states.get(2), 0.8);
 		testProbCase(states.get(1), as.get(3), states.get(5), 0.0);
 		testProbCase(states.get(1), as.get(3), states.get(0), 0.0);
@@ -241,6 +241,9 @@ public class GridWorldTest {
 		testProbCase(states.get(6), as.get(2), states.get(6), 0.8);
 		testProbCase(states.get(6), as.get(2), states.get(2), 0.1);
 		testProbCase(states.get(6), as.get(2), states.get(10), 0.1);
+		
+		//Going east and mistakenly bumps into wall
+		testProbCase(states.get(2), as.get(3), states.get(2), 0.1);
 		
 		
 	}

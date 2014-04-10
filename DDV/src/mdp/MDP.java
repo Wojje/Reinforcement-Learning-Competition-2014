@@ -12,8 +12,9 @@ public interface MDP {
 	public List<State> getStates();
 	public List<ActionStep> getActions();
 	public double probTransition(StateActionState sas);
-	public double rewardTwoStates(State s, State sprime);
-	public double rewardSingleState(State s);
+
+	public double reward(State s);
+	public double reward(State s, State sprime);
 	
 	
 	

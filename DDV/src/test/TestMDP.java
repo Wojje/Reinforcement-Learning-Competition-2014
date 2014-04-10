@@ -11,7 +11,7 @@ import mdp.MDP;
 public class TestMDP {
 
 	public static void main(String[] args) {
-		MDP gw = new GridWorldMDP(1, 1, 0.8);
+		MDP gw = new GridWorldMDP(1, 1, -0.01, 0.8);
 		List<ActionStep> actions = gw.getActions();
 		List<State> states = gw.getStates();
 		for (State s : states) {

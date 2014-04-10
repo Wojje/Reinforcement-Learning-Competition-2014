@@ -37,17 +37,19 @@ public class GridWorldMDP implements MDP {
 	private GWorldStates[][] world;
 	private double reward;
 	private double deathRew;
-	private double succesMoveProb = 0.8;
+	private double succesMoveProb;
+	private double livingReward;
 	
-	public GridWorldMDP(double reward, double deathRew, double successMove){
+	public GridWorldMDP(double reward, double deathRew, double livingRew, double successMove){
 		this.reward = reward;
 		this.deathRew = deathRew;
+		this.livingReward = livingRew;
 		this.succesMoveProb = successMove;
 		createStates();
 	}
 	
 	public GridWorldMDP(){
-		this(1, -1, 0.8);
+		this(1, -1, -0.01, 0.8);
 	}
 	
 	
@@ -123,7 +125,7 @@ public class GridWorldMDP implements MDP {
 	}
 
 	@Override
-	public double rewardTwoStates(State s, State sprime) {
+	public double reward(State s, State sprime) {
 		int place = s.getInt(0);
 		if(place == -1){
 			return 0;
@@ -138,12 +140,12 @@ public class GridWorldMDP implements MDP {
 				return deathRew;
 			}
 		}
-		return 0;
+		return livingReward;
 	}
 	
 	
 	@Override
-	public double rewardSingleState(State s) {
+	public double reward(State s) {
 		int place = s.getInt(0);
 		if(validPlace(place)) {
 			int val = s.getInt(1);
@@ -153,7 +155,7 @@ public class GridWorldMDP implements MDP {
 				return deathRew;
 			}
 		}
-		return 0;
+		return livingReward;
 	}
 
 	@Override
@@ -189,14 +191,39 @@ public class GridWorldMDP implements MDP {
 			}
 		}
 		if(futurePlace == place){
-			if(placeToRow(place) == 0 && action == 0){
-				return succesMoveProb;
-			} else if (placeToRow(place) == 2 && action == 1){
-				return succesMoveProb;
-			} else if (placeToCol(place) == 0 && action == 2){
-				return succesMoveProb;
-			} else if (placeToCol(place) == 3 && action == 3){
-				return succesMoveProb;
+			
+			if(place == 0 && (action == 0 || action == 2)){
+				return succesMoveProb + (1-succesMoveProb)/2.0;
+			} else if (place == 8 && (action == 1 || action == 2)){
+				return succesMoveProb + (1-succesMoveProb)/2.0;
+			} else if (place == 11 && (action == 1 || action == 3)){
+				return succesMoveProb + (1-succesMoveProb)/2.0;
+			}
+			
+			if(placeToRow(place) == 0){
+				if(action == 0){
+					return succesMoveProb;
+				} else if (action == 2 || action == 3){
+					return (1-succesMoveProb)/2.0;
+				}
+			} else if (placeToRow(place) == 2){
+				if(action == 1){
+					return succesMoveProb;
+				} else if (action == 2 || action == 3){
+					return (1-succesMoveProb)/2.0;
+				}
+			} else if (placeToCol(place) == 0){
+				if(action == 2){
+					return succesMoveProb;
+				} else if (action == 0 || action == 1){
+					return (1-succesMoveProb)/2.0;
+				}
+			} else if (placeToCol(place) == 3){
+				if(action == 3){
+					return succesMoveProb;
+				} else if (action == 0 || action == 1){
+					return (1-succesMoveProb)/2.0;
+				}
 			} else if (moveTowardsBlock(place, action)){
 				return succesMoveProb;
 			}
@@ -221,21 +248,6 @@ public class GridWorldMDP implements MDP {
 		return 0;
 	}
 	
-//	private boolean topRow(int place) {
-//		return place == 0 || place == 1 || place == 2;
-//	}
-//	
-//	private boolean bottomRow(int place){
-//		return place == 8 || place == 9 || place == 10 || place == 11;
-//	}
-//	
-//	private boolean leftRow(int place){
-//		return place == 0 || place == 4 || place == 8 || place == 11;
-//	}
-//	
-//	private boolean rightRow(int place){
-//		return place == 11;
-//	}
 
 	private boolean moveTowardsBlock(int place, int action) {
 		return (place == 1 && action == 1) ||

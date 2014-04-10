@@ -54,8 +54,8 @@ public class QValues {
 				
 			}
 			if(delta < EPS || i == 0){
-				values.put(mdp.getStates().get(3), 0.00);
-				values.put(mdp.getStates().get(7), 0.00);
+//				values.put(mdp.getStates().get(3), 0.00);
+//				values.put(mdp.getStates().get(7), 0.00);
 				return;
 			}
 			i--;
@@ -70,10 +70,10 @@ public class QValues {
 			double sum = 0;
 			for(State sprime : mdp.getStates()){
 				StateActionState sas = new StateActionState(s, as, sprime);
-				double res = mdp.probTransition(sas) * (mdp.rewardSingleState(s) + gamma * values.get(sprime));
+				double res = mdp.probTransition(sas) * (mdp.reward(s) + gamma * values.get(sprime));
 				if(s.getInt(0) == 7){
 					System.out.println("prob: "+mdp.probTransition(sas));
-					System.out.println("R(s,a, s'): "+(mdp.rewardSingleState(s)));
+					System.out.println("R(s,a, s'): "+(mdp.reward(sprime)));
 					System.out.println("future value: "+values.get(sprime));
 				}
 				sum += res;
@@ -111,7 +111,7 @@ public class QValues {
 		double sum = 0;
 		for(State sprime : mdp.getStates()){
 			StateActionState sas = new StateActionState(s, a, sprime);
-			sum += mdp.probTransition(sas) * (mdp.rewardSingleState(sprime)+gamma*values.get(sprime));
+			sum += mdp.probTransition(sas) * (mdp.reward(s)+gamma*values.get(sprime));
 		}
 		return sum;
 	}
@@ -127,13 +127,13 @@ public class QValues {
 	
 	public static void main(String[] args) {
 		
-		MDP mdp = new GridWorldMDP();
+		MDP mdp = new GridWorldMDP(1, -1, -0.01, 0.8);
 		QValues qv = new QValues(mdp);
 		
 		qv.valueIteration(-1);
 		
 		for(State s : mdp.getStates()){
-			DecimalFormat df = new DecimalFormat("##.##");
+			DecimalFormat df = new DecimalFormat("##.##############");
 			System.out.println("S: "+s.getInt(0)+" : "+df.format(qv.getValues().get(s)));
 		}
 		
@@ -152,7 +152,7 @@ public class QValues {
 		}
 		
 		public String toString(){
-			DecimalFormat df = new DecimalFormat("##.##");
+			DecimalFormat df = new DecimalFormat("##.####################");
 			return "N: "+df.format(qvs[0]) +
 					" S: "+df.format(qvs[1]) +
 					" W: "+df.format(qvs[2]) +
