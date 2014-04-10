@@ -20,7 +20,7 @@ import utils.State;
 import utils.StateAction;
 import utils.StateActionState;
 
-public class ConfidenceIntervalAlgorithm implements AgentInterface{
+public class ConfidenceIntervalAlgorithm implements AgentInterface {
 
 	private int obsRangeMin;
 	private static int obsRangeMax;
@@ -50,21 +50,17 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface{
 	private static Map<StateAction, Double> qLowers;
 	private static Map<State, Double> vUppers;
 	private static Map<State, Double> vLowers;
-	private Map<State, Double> muUppers;
-	
+
 	private Random randGenerator = new Random();
 
-	
 	public void agent_cleanup() {
 		lastStateAction = null;
 	}
 
-	
 	public void agent_end(double reward) {
 		// TODO Auto-generated method stub
 	}
 
-	
 	public void agent_init(String taskSpec) {
 		TaskSpec theTaskSpec = new TaskSpec(taskSpec);
 		System.out.println("CI agent parsed the task spec.");
@@ -95,6 +91,10 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface{
 		observedRewards = new HashMap<StateAction, Double>();
 		observedStateTrans = new HashMap<StateAction, Set<State>>();
 		observedStates = new LinkedList<State>();
+		stateActionCounter = new HashMap<StateAction, Integer>();
+		stateActionStateCounter = new HashMap<StateActionState, Integer>();
+
+
 
 		qUppers = new HashMap<StateAction, Double>();
 		qLowers = new HashMap<StateAction, Double>();
@@ -102,56 +102,61 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface{
 		vLowers = new HashMap<State, Double>();
 	}
 
-	
 	// What is this shit?
 	public String agent_message(String arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	
 	public Action agent_start(Observation o) {
 		stateZero = new State(o);
 		observedStates.add(stateZero);
 		int theIntAction = randGenerator.nextInt(2);
-        Action bestAction = new Action(1, 0, 0);
-        bestAction.intArray[0] = theIntAction;
+		Action bestAction = new Action(1, 0, 0);
+		bestAction.intArray[0] = theIntAction;
+		lastStateAction = new StateAction(stateZero, new ActionStep(bestAction));
+		updateStateActionCounter(lastStateAction);
 		return bestAction;
 	}
-	
+
 	public Action agent_step(double r, Observation o) {
 		State sprime = new State(o);
 		observedStates.add(new State(o));
 		observedRewards.put(lastStateAction, r);
 		updateObservedStateTrans(lastStateAction, sprime);
+		updateStateActionStateCounter(new StateActionState(lastStateAction,
+				sprime));
 
+		
+		
+		updateQ(lastStateAction, true);
+		updateQ(lastStateAction, false);
 		updateQUpper();
 		updateQLower();
 		updateVUpper();
 		updateVLower();
-		
 
-		int theIntAction = randGenerator.nextInt(actRangeMax-1);
-        Action bestAction = new Action(1, 0, 0);
-        bestAction.intArray[0] = theIntAction;
+		int theIntAction = randGenerator.nextInt(actRangeMax - 1);
+		Action bestAction = new Action(1, 0, 0);
+		bestAction.intArray[0] = theIntAction;
 
 		double bestValue = Double.MIN_VALUE;
 		// increment N(s,a) counter
-        for (StateAction sa : qUppers.keySet()) {
-        	if (sa.getState() == sprime) {
-        		double value = qUppers.get(sa);
-        		if (value > bestValue) {
-        			bestAction = sa.getAction();
-        			bestValue = value;
-        		}
-        	}
-        }
+		for (StateAction sa : qUppers.keySet()) {
+			if (sa.getState() == sprime) {
+				double value = qUppers.get(sa);
+				if (value > bestValue) {
+					bestAction = sa.getAction();
+					bestValue = value;
+				}
+			}
+		}
 
-        
-        lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
+		lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
 		
+		updateStateActionCounter(lastStateAction);
 
-		return bestAction; //return chosen action
+		return bestAction; // return chosen action
 	}
 
 	private static void updateObservedStateTrans(StateAction lastStateAction,
@@ -198,8 +203,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface{
 				if (v.get(sa.getState()) < value) {
 					v.put(state, value);
 				}
-			}
-			else {
+			} else {
 				v.put(state, value);
 			}
 		}
@@ -215,8 +219,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface{
 				if (v.get(sa.getState()) < value) {
 					v.put(state, value);
 				}
-			}
-			else {
+			} else {
 				v.put(state, value);
 			}
 		}
@@ -226,22 +229,25 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface{
 	private void updateMuUpper() {
 		// Equation 8
 	}
-	
+
 	private static void iterateQ(boolean upper) {
 		boolean converged = false;
-		while(!converged) {
+		while (!converged) {
+			boolean allConverged = true;
 			for (StateAction sa : qUppers.keySet()) {
 				double tmp = upper ? qUppers.get(sa) : qLowers.get(sa);
-				if (Math.abs(tmp - updateQ(sa, upper)) < convergenceFactor) {
-					converged = true;
-				} else {
-					converged = false;
+				updateQ(sa, upper);
+				if (Math.abs(tmp - qUppers.get(sa)) > convergenceFactor) {
+					allConverged = false;
 				}
+			}
+			if (allConverged) {
+				converged = true;
 			}
 		}
 	}
 
-	private static double updateQ(StateAction sa, boolean upper) {
+	private static void updateQ(StateAction sa, boolean upper) {
 		// Equation 3 and 4
 		double tmp;
 		Map<StateActionState, Double> pTildes = computePTildes(sa, true);
@@ -269,9 +275,9 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface{
 					* Math.max(val, vMax);
 		}
 		if (upper) {
-			return qUppers.put(sa, obsRew(sa) + gamma * sum);
+			qUppers.put(sa, obsRew(sa) + gamma * sum);
 		} else {
-			return qLowers.put(sa, obsRew(sa) + gamma * sum);
+			qLowers.put(sa, obsRew(sa) + gamma * sum);
 		}
 	}
 
@@ -308,7 +314,8 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface{
 		return pTilde;
 	}
 
-	private static State argmin(Map<StateActionState, Double> pTilde, boolean upper) {
+	private static State argmin(Map<StateActionState, Double> pTilde,
+			boolean upper) {
 		double value = Double.MAX_VALUE;
 		State min = null;
 		Double tmpValue;
@@ -367,9 +374,8 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface{
 	}
 
 	private static double omega(int nsa) {
-		return Math
-				.sqrt((2 * Math.log(Math.pow(2, obsRangeMax) - 2) - Math
-						.log(conf)) / nsa);
+		return Math.sqrt((2 * Math.log(Math.pow(2, obsRangeMax) - 2) - Math
+				.log(conf)) / nsa);
 	}
 
 	private static Map<StateActionState, Double> createPRoof(StateAction sa) {
