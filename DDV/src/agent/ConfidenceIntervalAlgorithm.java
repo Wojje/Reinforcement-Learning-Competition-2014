@@ -57,7 +57,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		
 	}
 	
-	public ConfidenceIntervalAlgorithm(int minState, int maxState, int minAct, int maxAct, int maxRew){
+	public ConfidenceIntervalAlgorithm(int minState, int maxState, int minAct, int maxAct, double maxRew){
 		actRangeMax = maxAct;
 		actRangeMin = minAct;
 		obsRangeMax = maxState;
@@ -71,6 +71,8 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		observedStateTrans = new HashMap<StateAction, Set<State>>();
 		observedStates = new LinkedList<State>();
 
+		stateActionCounter = new HashMap<StateAction, Integer>();
+		stateActionStateCounter = new HashMap<StateActionState, Integer>();
 		qUppers = new HashMap<StateAction, Double>();
 		qLowers = new HashMap<StateAction, Double>();
 		vUppers = new HashMap<State, Double>();
@@ -452,4 +454,23 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		}
 	}
 
+	public void printQValues(){
+		for(StateAction sa : qUppers.keySet()){
+			String s = "S: "+sa.getState().getInt(0)+
+						" A: "+sa.getAction().getInt(0) +
+						" QUpper: " + qUppers.get(sa) + 
+						" QLower: " + qLowers.get(sa);
+			System.out.println(s);
+		}
+	}
+	
+	public void printValues(){
+		for(State s : vUppers.keySet()){
+			String str = "S: "+s.getInt(0)+
+						" VUpper: " + vUppers.get(s) + 
+						" VLower: " + vLowers.get(s);
+			System.out.println(str);
+		}
+	}
+	
 }
