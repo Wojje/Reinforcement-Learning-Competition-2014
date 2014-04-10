@@ -5,10 +5,7 @@ import static org.junit.Assert.*;
 import java.util.List;
 
 import mdp.GridWorldMDP;
-import mdp.MDP;
-
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import utils.ActionStep;
@@ -29,7 +26,7 @@ public class GridWorldTest {
 	@Test
 	public void testGetStates() {
 		List<State> l = mdp.getStates();
-		assertTrue(l.size() == 12);
+		assertTrue(l.size() == 13);
 	}
 	
 	@Test
@@ -39,6 +36,9 @@ public class GridWorldTest {
 		for(State s : l){
 			assertTrue(s.getInt(0) == i);
 			i++;
+			if(i == 12){
+				break;
+			}
 		}
 	
 		assertTrue(l.get(0).getInt(1) == 0);
@@ -58,12 +58,13 @@ public class GridWorldTest {
 	@Test
 	public void testActionReps(){
 		List<ActionStep> as = mdp.getActions();
-		assertTrue(as.size() == 4);
+		assertTrue(as.size() == 5);
 		
 		assertTrue(as.get(0).getInt(0) == 0);
 		assertTrue(as.get(1).getInt(0) == 1);
 		assertTrue(as.get(2).getInt(0) == 2);
 		assertTrue(as.get(3).getInt(0) == 3);
+		assertTrue(as.get(4).getInt(0) == 4);
 		
 		
 	}
@@ -100,7 +101,28 @@ public class GridWorldTest {
 	}
 	
 	@Test
-	public void testRewFunc(){
+	public void testRewSingleStateFunc(){
+		List<State> states = mdp.getStates();
+		List<ActionStep> as = mdp.getActions();
+		for(State s : states){
+			for(ActionStep a : as){
+				
+				double rew = mdp.rewardSingleState(s);
+				if(s.getInt(0) == 3){
+					assertEquals(1, rew, EPS);
+				} else if (s.getInt(0) == 7){
+					assertEquals(-1, rew, EPS);
+				} else {
+					assertEquals(0, rew, EPS);
+				}
+				
+			}
+		}
+	}
+		
+		
+	@Test
+	public void testRewTwoStateFunc(){
 		List<State> states = mdp.getStates();
 		List<ActionStep> as = mdp.getActions();
 		for(State s : states){
@@ -114,16 +136,16 @@ public class GridWorldTest {
 					}
 					
 					if(place == 2 && futurePlace == 3){
-						double rew = mdp.reward(s, sp);
+						double rew = mdp.rewardTwoStates(s, sp);
 						assertEquals(1, rew, EPS);
 					} else if (place == 6 && futurePlace == 7){
-						double rew = mdp.reward(s, sp);
+						double rew = mdp.rewardTwoStates(s, sp);
 						assertEquals(-1, rew, EPS);
 					} else if (place == 11 && futurePlace == 7){
-						double rew = mdp.reward(s, sp);
+						double rew = mdp.rewardTwoStates(s, sp);
 						assertEquals(-1, rew, EPS);
 					} else {
-						double rew = mdp.reward(s, sp);
+						double rew = mdp.rewardTwoStates(s, sp);
 						System.out.println("p: " + place +" fp: " + futurePlace + " rew: "+rew);
 						assertEquals(0, rew, EPS);
 					}
@@ -150,15 +172,15 @@ public class GridWorldTest {
 		 */
 		
 		// (0,0)
-		testProbCase(states.get(0), as.get(0), states.get(0), 0.0);
+		testProbCase(states.get(0), as.get(0), states.get(0), 0.8);
 		testProbCase(states.get(0), as.get(1), states.get(1), 0.1);
 		testProbCase(states.get(0), as.get(1), states.get(0), 0.0);
-		testProbCase(states.get(0), as.get(2), states.get(0), 0.0);
+		testProbCase(states.get(0), as.get(2), states.get(0), 0.8);
 		testProbCase(states.get(0), as.get(3), states.get(1), 0.8);
 		testProbCase(states.get(0), as.get(3), states.get(4), 0.1);
 		
 		// (0,1)
-		testProbCase(states.get(1), as.get(0), states.get(1), 0.0);
+		testProbCase(states.get(1), as.get(0), states.get(1), 0.8);
 		testProbCase(states.get(1), as.get(0), states.get(0), 0.1);
 		testProbCase(states.get(1), as.get(0), states.get(2), 0.1);
 		testProbCase(states.get(1), as.get(1), states.get(5), 0.0);
@@ -171,7 +193,7 @@ public class GridWorldTest {
 		testProbCase(states.get(1), as.get(3), states.get(5), 0.0);
 		testProbCase(states.get(1), as.get(3), states.get(0), 0.0);
 		
-		// (0,2)
+		// (1,2)
 		/**
 		 * E E E W
 		 * E B E D
@@ -191,6 +213,34 @@ public class GridWorldTest {
 		testProbCase(states.get(6), as.get(3), states.get(2), 0.1);
 		testProbCase(states.get(6), as.get(3), states.get(10), 0.1);
 		testProbCase(states.get(6), as.get(3), states.get(5), 0.0);
+		
+		//(0,3)
+		testProbCase(states.get(3), as.get(0), states.get(2), 0);
+		testProbCase(states.get(3), as.get(0), states.get(7), 0);
+		testProbCase(states.get(3), as.get(1), states.get(10), 0);
+		testProbCase(states.get(3), as.get(1), states.get(7), 0);
+		testProbCase(states.get(3), as.get(1), states.get(10), 0);
+		testProbCase(states.get(3), as.get(2), states.get(5), 0);
+		testProbCase(states.get(3), as.get(2), states.get(2), 0);
+		testProbCase(states.get(3), as.get(2), states.get(10), 0);
+		testProbCase(states.get(3), as.get(3), states.get(7), 0);
+		testProbCase(states.get(3), as.get(3), states.get(2), 0);
+		testProbCase(states.get(3), as.get(3), states.get(10), 0);
+		testProbCase(states.get(3), as.get(3), states.get(5), 0);
+		
+		//Terminating states
+		testProbCase(states.get(7), as.get(4), states.get(12), 1);
+		testProbCase(states.get(3), as.get(4), states.get(12), 1);
+		
+		//Trying to go against a wall
+		testProbCase(states.get(1), as.get(0), states.get(1), 0.8);
+		testProbCase(states.get(1), as.get(0), states.get(0), 0.1);
+		testProbCase(states.get(1), as.get(0), states.get(2), 0.1);
+		
+		//Trying to go against the "block"
+		testProbCase(states.get(6), as.get(2), states.get(6), 0.8);
+		testProbCase(states.get(6), as.get(2), states.get(2), 0.1);
+		testProbCase(states.get(6), as.get(2), states.get(10), 0.1);
 		
 		
 	}

@@ -30,7 +30,7 @@ public class GridWorldMDP implements MDP {
 		}
 	}
 	
-	private final int NORTH = 0, SOUTH = 1,  WEST = 2, EAST = 3;
+	private final int NORTH = 0, SOUTH = 1,  WEST = 2, EAST = 3, EXIT = 4;
 	
 	
 	//private List<State> states;
@@ -108,6 +108,7 @@ public class GridWorldMDP implements MDP {
 				place++;
 			}
 		}
+		states.add(createState(-1, -1)); //Terminal exiting state
 		return states;
 	}
 
@@ -115,15 +116,19 @@ public class GridWorldMDP implements MDP {
 	public List<ActionStep> getActions() {
 		
 		List<ActionStep> actions = new LinkedList<ActionStep>();
-		for(int a=0; a <= 3; a++){
+		for(int a=0; a <= 4; a++){
 			actions.add(createActionStep(a));
 		}
 		return actions;
 	}
 
 	@Override
-	public double reward(State s, State sprime) {
+	public double rewardTwoStates(State s, State sprime) {
 		int place = s.getInt(0);
+		if(place == -1){
+			return 0;
+		}
+	
 		int futurePlace = sprime.getInt(0);
 		if(validPlace(futurePlace) && neighborDir(place, futurePlace) != -1){
 			int val = sprime.getInt(1);
@@ -136,9 +141,9 @@ public class GridWorldMDP implements MDP {
 		return 0;
 	}
 	
-	/*
+	
 	@Override
-	public double reward(State s) {
+	public double rewardSingleState(State s) {
 		int place = s.getInt(0);
 		if(validPlace(place)) {
 			int val = s.getInt(1);
@@ -149,7 +154,7 @@ public class GridWorldMDP implements MDP {
 			}
 		}
 		return 0;
-	}*/
+	}
 
 	@Override
 	public State getStartingState() {
@@ -171,27 +176,74 @@ public class GridWorldMDP implements MDP {
 		int place = sas.getState().getInt(0);
 		int futurePlace = sas.getSprime().getInt(0);
 		int futureStatus = sas.getSprime().getInt(1);
-		if(futureStatus != 1){	
+		int dir = neighborDir(place, futurePlace);
+		int action = sas.getAction().getInt(0);
+		if(place == -1 || place == 5){
+			return 0;
+		}
+		if(place == 3 || place == 7){
+			if(futurePlace == -1 && action == 4){
+				return 1;
+			} else {
+				return 0;
+			}
+		}
+		if(futurePlace == place){
+			if(placeToRow(place) == 0 && action == 0){
+				return succesMoveProb;
+			} else if (placeToRow(place) == 2 && action == 1){
+				return succesMoveProb;
+			} else if (placeToCol(place) == 0 && action == 2){
+				return succesMoveProb;
+			} else if (placeToCol(place) == 3 && action == 3){
+				return succesMoveProb;
+			} else if (moveTowardsBlock(place, action)){
+				return succesMoveProb;
+			}
+		}
+	
+		if(futureStatus != 1){
 			if(validPlace(futurePlace)){
-				int dir = neighborDir(place, futurePlace);
 				if(dir != -1){
-					int a = sas.getAction().getInt(0);
-					if(a == dir){
+					if(action == dir){
 						return succesMoveProb;
 					} else {
-						if( (a == 0 || a == 1) && (dir == 2 || dir == 3)){
+						if( (action== 0 || action == 1) && (dir == 2 || dir == 3)){
 							return (1-succesMoveProb)/2.0;
-						} else if( (a == 2 || a == 3) && (dir == 0 || dir == 1) ){
+						} else if( (action == 2 || action == 3) && (dir == 0 || dir == 1) ){
 							return (1-succesMoveProb)/2.0;
 						}
 					}
-				}
+				} 
 			}		
-		}
+		} 
 		
 		return 0;
 	}
 	
+//	private boolean topRow(int place) {
+//		return place == 0 || place == 1 || place == 2;
+//	}
+//	
+//	private boolean bottomRow(int place){
+//		return place == 8 || place == 9 || place == 10 || place == 11;
+//	}
+//	
+//	private boolean leftRow(int place){
+//		return place == 0 || place == 4 || place == 8 || place == 11;
+//	}
+//	
+//	private boolean rightRow(int place){
+//		return place == 11;
+//	}
+
+	private boolean moveTowardsBlock(int place, int action) {
+		return (place == 1 && action == 1) ||
+				(place == 4 && action == 3) ||
+				(place == 6 && action == 2) ||
+				(place == 9 && action == 0) ;
+	}
+
 	private int neighborDir(int place, int futurePlace) {
 		int pr = placeToRow(place);
 		int pc = placeToCol(place);
