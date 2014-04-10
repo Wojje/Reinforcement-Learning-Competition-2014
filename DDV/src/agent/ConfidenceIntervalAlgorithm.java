@@ -50,9 +50,28 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface{
 	private static Map<StateAction, Double> qLowers;
 	private static Map<State, Double> vUppers;
 	private static Map<State, Double> vLowers;
-	private Map<State, Double> muUppers;
 	
 	private Random randGenerator = new Random();
+	
+	public ConfidenceIntervalAlgorithm(int minState, int maxState, int minAct, int maxAct, int maxRew){
+		actRangeMax = maxAct;
+		actRangeMin = minAct;
+		obsRangeMax = maxState;
+		obsRangeMin = minState;
+		this.maxRew = maxRew;
+//		minRew = theRewardRange.getMin();
+
+		vMax = maxRew / (1 - gamma);
+
+		observedRewards = new HashMap<StateAction, Double>();
+		observedStateTrans = new HashMap<StateAction, Set<State>>();
+		observedStates = new LinkedList<State>();
+
+		qUppers = new HashMap<StateAction, Double>();
+		qLowers = new HashMap<StateAction, Double>();
+		vUppers = new HashMap<State, Double>();
+		vLowers = new HashMap<State, Double>();
+	}
 
 	
 	public void agent_cleanup() {
@@ -88,7 +107,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface{
 		obsRangeMax = theObsRange.getMax();
 		obsRangeMin = theObsRange.getMin();
 		maxRew = theRewardRange.getMax();
-		minRew = theRewardRange.getMin();
+//		minRew = theRewardRange.getMin();
 
 		vMax = maxRew / (1 - gamma);
 
