@@ -36,7 +36,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	private double accuracy = 0.1; // Proper value?
 	private static double conf = 0.05; // Woot?
 
-	private static double gamma = 0.1; // Decay of rewards
+	private static double gamma = 0.9; // Decay of rewards
 
 	private static double convergenceFactor = 10.0;
 
@@ -57,7 +57,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		
 	}
 	
-	public ConfidenceIntervalAlgorithm(int minState, int maxState, int minAct, int maxAct, int maxRew){
+	public ConfidenceIntervalAlgorithm(int minState, int maxState, int minAct, int maxAct, double maxRew){
 		actRangeMax = maxAct;
 		actRangeMin = minAct;
 		obsRangeMax = maxState;
@@ -71,6 +71,8 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		observedStateTrans = new HashMap<StateAction, Set<State>>();
 		observedStates = new LinkedList<State>();
 
+		stateActionCounter = new HashMap<StateAction, Integer>();
+		stateActionStateCounter = new HashMap<StateActionState, Integer>();
 		qUppers = new HashMap<StateAction, Double>();
 		qLowers = new HashMap<StateAction, Double>();
 		vUppers = new HashMap<State, Double>();
@@ -334,10 +336,11 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 
 			StateActionState sasFloor = new StateActionState(sa, argmin(pTilde,
 					upper));
-			StateActionState sasRoof = new StateActionState(sa, argmax(sPrimes,
-					pTilde, upper));
-			double sasrval = 1 - pTilde.get(sasRoof);
-			double sasfval = pTilde.get(sasFloor);
+			State max = argmax(sPrimes,
+					pTilde, upper);
+			StateActionState sasRoof = new StateActionState(sa, max);
+			double sasrval = 1 - getFromProbDist(pTilde, sasRoof);
+			double sasfval = getFromProbDist(pTilde, sasFloor);
 			double zeta = Math.min(Math.min(sasrval, sasfval), deltaOmega);
 			pTilde.put(sasFloor, sasfval - zeta);
 			pTilde.put(sasRoof, sasrval + zeta);
@@ -355,7 +358,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 
 		for (StateActionState sas : pTilde.keySet()) {
 			State s = sas.getSprime();
-			if (pTilde.get(sas) > 0) {
+			if (getFromProbDist(pTilde, sas) > 0) {
 				if (upper) {
 					tmpValue = vUppers.get(s);
 				} else {
@@ -384,7 +387,8 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		Double tmpValue;
 		for (StateActionState sas : pTilde.keySet()) {
 			State s = sas.getSprime();
-			if (sPrimes.contains(s) && pTilde.get(sas) < 1) {
+			if (sPrimes.contains(s) && getFromProbDist(pTilde, sas) < 1) {
+				System.out.println("Contains and prob < 1");
 				if (upper) {
 					tmpValue = vUppers.get(s);
 				} else {
@@ -420,6 +424,12 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 			ret.put(sas, prob);
 		}
 		return ret;
+	}
+	
+	private static double getFromProbDist(Map<StateActionState, Double> incompletPD,
+										StateActionState sas){
+		Double d = incompletPD.get(sas);
+		return d == null ? 0.0 : d;
 	}
 
 	private static Integer getCount(StateAction sa) {
@@ -461,4 +471,23 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		}
 	}
 
+	public void printQValues(){
+		for(StateAction sa : qUppers.keySet()){
+			String s = "S: "+sa.getState().getInt(0)+
+						" A: "+sa.getAction().getInt(0) +
+						" QUpper: " + qUppers.get(sa) + 
+						" QLower: " + qLowers.get(sa);
+			System.out.println(s);
+		}
+	}
+	
+	public void printValues(){
+		for(State s : vUppers.keySet()){
+			String str = "S: "+s.getInt(0)+
+						" VUpper: " + vUppers.get(s) + 
+						" VLower: " + vLowers.get(s);
+			System.out.println(str);
+		}
+	}
+	
 }
