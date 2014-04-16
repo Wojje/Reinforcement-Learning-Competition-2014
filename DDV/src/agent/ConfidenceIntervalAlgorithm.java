@@ -135,7 +135,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	public Action agent_start(Observation o) {
 		stateZero = new State(o);
 		observedStates.add(stateZero);
-		int theIntAction = randGenerator.nextInt(2);
+		int theIntAction = randGenerator.nextInt(actRangeMax+1);
 		Action bestAction = new Action(1, 0, 0);
 		bestAction.intArray[0] = theIntAction;
 		lastStateAction = new StateAction(stateZero, new ActionStep(bestAction));
@@ -160,25 +160,33 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		updateVUpper();
 		updateVLower();
 
-		int theIntAction = randGenerator.nextInt(actRangeMax - 1);
 		Action bestAction = new Action(1, 0, 0);
-		bestAction.intArray[0] = theIntAction;
+		boolean flags[] = {false, false, false, false, false};
 
 		double bestValue = Double.MIN_VALUE;
-		// increment N(s,a) counter
 		for (StateAction sa : qUppers.keySet()) {
 			if (sa.getState() == sprime) {
 				double value = qUppers.get(sa);
+				flags[sa.getAction().intArray[0]] = true;
 				if (value > bestValue) {
 					bestAction = sa.getAction();
 					bestValue = value;
 				}
 			}
 		}
+		
+		
+		for (int i = 0; i <= actRangeMax; i++) {
+			if (!flags[i]) {
+				bestAction.intArray[0] = i;
+			}
+		}
 
 		lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
 		
 		updateStateActionCounter(lastStateAction);
+		
+		System.out.println(bestAction.intArray[0]);
 
 		return bestAction; // return chosen action
 	}
@@ -261,7 +269,8 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 			for (StateAction sa : qUppers.keySet()) {
 				double tmp = upper ? qUppers.get(sa) : qLowers.get(sa);
 				updateQ(sa, upper);
-				if (Math.abs(tmp - qUppers.get(sa)) > convergenceFactor) {
+				double newQ = upper ? qUppers.get(sa) : qLowers.get(sa);
+				if (Math.abs(tmp - newQ) > convergenceFactor) {
 					allConverged = false;
 				}
 			}
