@@ -2,18 +2,13 @@ package experiment;
 
 import java.util.Collections;
 import java.util.LinkedList;
-import java.util.List;
 
 import mdp.GridWorldMDP;
 import mdp.MDP;
-
-import org.rlcommunity.rlglue.codec.types.Action;
-
-import agent.ConfidenceIntervalAlgorithm;
-
 import utils.ActionStep;
 import utils.State;
 import utils.StateActionState;
+import agent.ConfidenceIntervalAlgorithm;
 
 public class GridWorldExperiment {
 	private MDP mdp;
