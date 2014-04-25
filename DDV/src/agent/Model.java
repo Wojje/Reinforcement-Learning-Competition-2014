@@ -81,7 +81,7 @@ public class Model {
 	public double pTilde(StateActionState sas) {
 		Double d = pTilde.get(sas);
 		double d2 = d == null ? 0 : d;
-		System.out.println("pTilde: "+d2);
+//		System.out.println("pTilde: "+d2);
 		return d2;
 	}
 	
@@ -143,7 +143,7 @@ public class Model {
 			StateActionState sas = new StateActionState(sa, s);
 			double nsasVal = NSAS(sas);
 			double nsaVal = NSA(sa);
-			System.out.println("NSAS: "+ nsasVal + " NSA " + nsaVal);
+//			System.out.println("NSAS: "+ nsasVal + " NSA " + nsaVal);
 			prob = NSAS(sas) / ((double) NSA(sa));
 			ret.put(sas, prob);
 		}

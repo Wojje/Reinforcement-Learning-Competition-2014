@@ -258,7 +258,7 @@ public class SysOpEnvironment implements EnvironmentInterface {
 		environmentThread.start();
 		
 		SysOpCpuExperiment.main(args);
-		System.out.println("RunAllSkeleton Complete");
+		System.out.println("SysOp Complete");
 		
 		//Quit Java, including stopping the other threads
 		System.exit(1);

@@ -68,28 +68,14 @@ public class SysOpCpuExperiment {
         System.out.println("Environment responded to \"If at first you don't succeed; call it version 1.0  \" with: " + responseMessage);
 
         System.out.println("\n\n----------Running a few episodes----------");
-        runEpisode(100);
-        runEpisode(100);
-        runEpisode(100);
-        runEpisode(100);
-        runEpisode(100);
-        runEpisode(100);
-        runEpisode(100);
-        runEpisode(100);
-        runEpisode(100);
-        runEpisode(100);
-        runEpisode(100);
-        runEpisode(100);
-        runEpisode(100);
-        runEpisode(100);
-        runEpisode(100);
-        runEpisode(100);
-        runEpisode(100);
-        runEpisode(1000);
-        runEpisode(10000);
-        runEpisode(1);
+        runEpisode(10);
+        runEpisode(10);
+//        runEpisode(10);
+//        runEpisode(10);
+//        runEpisode(10);
+//        runEpisode(1);
         /* Remember that stepLimit of 0 means there is no limit at all!*/
-        runEpisode(0);
+        //runEpisode(0);
         RLGlue.RL_cleanup();
 
         System.out.println("\n\n----------Stepping through an episode----------");
@@ -108,13 +94,13 @@ public class SysOpCpuExperiment {
         Reward_observation_action_terminal stepResponse = RLGlue.RL_step();
 
         /*Run until the episode ends*/
-        while (stepResponse.terminal != 1) {
-            stepResponse = RLGlue.RL_step();
-            if (stepResponse.terminal != 1) {
-                /*Could optionally print state,action pairs */
-                /*printf("(%d,%d) ",stepResponse.o.intArray[0],stepResponse.a.intArray[0]);*/
-            }
-        }
+//        while (stepResponse.terminal != 1) {
+//            stepResponse = RLGlue.RL_step();
+//            if (stepResponse.terminal != 1) {
+//                /*Could optionally print state,action pairs */
+//                /*printf("(%d,%d) ",stepResponse.o.intArray[0],stepResponse.a.intArray[0]);*/
+//            }
+//        }
 
         System.out.println("\n\n----------Summary----------");
 

@@ -11,6 +11,7 @@ import org.rlcommunity.rlglue.codec.taskspec.ranges.DoubleRange;
 import org.rlcommunity.rlglue.codec.taskspec.ranges.IntRange;
 import org.rlcommunity.rlglue.codec.types.Action;
 import org.rlcommunity.rlglue.codec.types.Observation;
+import org.rlcommunity.rlglue.codec.util.AgentLoader;
 
 import utils.ActionStep;
 import utils.State;
@@ -59,29 +60,34 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 //		
 //	}
 	
-	public ConfidenceIntervalAlgorithm(int minState, int maxState, int minAct, int maxAct, double maxRew){
-		actRangeMax = maxAct;
-		actRangeMin = minAct;
-		obsRangeMax = maxState;
-		obsRangeMin = minState;
-		this.maxRew = maxRew;
-		
-		model = new Model(maxState, conf);
-		
-//		minRew = theRewardRange.getMin();
-
-		vMax = maxRew / (1 - gamma);
-
-//		observedRewards = new HashMap<StateAction, Double>();
-		observedStateTrans = new HashMap<StateAction, Set<State>>();
-//		observedStates = new LinkedList<State>();
-
-//		stateActionCounter = new HashMap<StateAction, Integer>();
-//		stateActionStateCounter = new HashMap<StateActionState, Integer>();
-		qUppers = new HashMap<StateAction, Double>();
-		qLowers = new HashMap<StateAction, Double>();
-		vUppers = new HashMap<State, Double>();
-		vLowers = new HashMap<State, Double>();
+//	public ConfidenceIntervalAlgorithm(int minState, int maxState, int minAct, int maxAct, double maxRew){
+//		actRangeMax = maxAct;
+//		actRangeMin = minAct;
+//		obsRangeMax = maxState;
+//		obsRangeMin = minState;
+//		this.maxRew = maxRew;
+//		
+//		model = new Model(maxState, conf);
+//		
+////		minRew = theRewardRange.getMin();
+//
+//		vMax = maxRew / (1 - gamma);
+//
+////		observedRewards = new HashMap<StateAction, Double>();
+//		observedStateTrans = new HashMap<StateAction, Set<State>>();
+////		observedStates = new LinkedList<State>();
+//
+////		stateActionCounter = new HashMap<StateAction, Integer>();
+////		stateActionStateCounter = new HashMap<StateActionState, Integer>();
+//		qUppers = new HashMap<StateAction, Double>();
+//		qLowers = new HashMap<StateAction, Double>();
+//		vUppers = new HashMap<State, Double>();
+//		vLowers = new HashMap<State, Double>();
+//	}
+	
+	public static void main(String[] args){
+     	AgentLoader theLoader=new AgentLoader(new ConfidenceIntervalAlgorithm());
+        theLoader.run();
 	}
 
 	public void agent_cleanup() {
@@ -110,6 +116,8 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		System.out.println("Reward range is: " + theRewardRange.getMin()
 				+ " to " + theRewardRange.getMax());
 
+		model = new Model(obsRangeMax, conf);
+		
 		actRangeMax = theActRange.getMax();
 		actRangeMin = theActRange.getMin();
 		obsRangeMax = theObsRange.getMax();
@@ -140,15 +148,17 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	}
 
 	public Action agent_start(Observation o) {
-		stateZero = new State(o);
+		Observation newObservation = o.duplicate();
+		stateZero = new State(newObservation);
 //		observedStates.add(stateZero);
-		model.addStartState(o);
+		model.addStartState(newObservation);
 		
 		int theIntAction = randGenerator.nextInt(actRangeMax+1);
 		Action bestAction = new Action(1, 0, 0);
 		bestAction.intArray[0] = theIntAction;
 		lastStateAction = new StateAction(stateZero, new ActionStep(bestAction));
 //		updateStateActionCounter(lastStateAction);
+		System.out.println(bestAction.intArray[0]);
 		return bestAction;
 	}
 
@@ -195,7 +205,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
 		
 		System.out.println(bestAction.intArray[0]);
-
+		
 		return bestAction; // return chosen action
 	}
 
@@ -349,12 +359,12 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 			
 			sasRoofValue = 1 - model.pTilde(sasRoof);
 			sasFloorValue = model.pTilde(sasFloor);
-			System.out.println("sasRoofValue: "+sasRoofValue + " sasFloorValue: "+sasFloorValue);
+//			System.out.println("sasRoofValue: "+sasRoofValue + " sasFloorValue: "+sasFloorValue);
 			zeta = Math.min(Math.min(sasRoofValue, sasFloorValue), deltaOmega);
 			model.updatePTilde(sasFloor, sasFloorValue - zeta);
 			model.updatePTilde(sasRoof, sasRoofValue + zeta);
 			deltaOmega = deltaOmega - zeta;
-			System.out.println(deltaOmega);
+//			System.out.println(deltaOmega);
 		}		
 	}
 
