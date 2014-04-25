@@ -119,7 +119,7 @@ public class GridWorldExperiment {
 	
 	
 	public static void main(String[] args) {
-		GridWorldExperiment exp = new GridWorldExperiment(new GridWorldMDP(), 1000);
+		GridWorldExperiment exp = new GridWorldExperiment(new GridWorldMDP(), 10);
 		exp.runExperiment();
 	
 	}
