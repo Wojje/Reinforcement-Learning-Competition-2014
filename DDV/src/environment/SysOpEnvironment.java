@@ -244,20 +244,20 @@ public class SysOpEnvironment implements EnvironmentInterface {
      * This is a trick we can use to make the agent easily loadable.
      */
     public static void main(String[] args) {
-        EnvironmentLoader theLoader = new EnvironmentLoader(
-                new SysOpEnvironment());
-//        theLoader.run();
-        
-        AgentLoader theAgentLoader=new AgentLoader(new ConfidenceIntervalAlgorithm());
-        
-        Thread agentThread=new Thread(theAgentLoader);
-		Thread environmentThread=new Thread(theLoader);
-		
-		//Start the threads
-		agentThread.start();
-		environmentThread.start();
-		
-		SysOpCpuExperiment.main(args);
+//        EnvironmentLoader theLoader = new EnvironmentLoader(
+//                new SysOpEnvironment());
+////        theLoader.run();
+//        
+//        AgentLoader theAgentLoader=new AgentLoader(new ConfidenceIntervalAlgorithm());
+//        
+//        Thread agentThread=new Thread(theAgentLoader);
+//		Thread environmentThread=new Thread(theLoader);
+//		
+//		//Start the threads
+//		agentThread.start();
+//		environmentThread.start();
+//		
+//		SysOpCpuExperiment.main(args);
 		System.out.println("SysOp Complete");
 		
 		//Quit Java, including stopping the other threads

@@ -1,6 +1,8 @@
 package agent;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -341,13 +343,6 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		model.initPRoofPTilde(sa);
 		
 		
-//		List<State> sPrimes = new LinkedList<State>();
-		
-//		for (StateActionState sas : pRoof.keySet()) {
-//			if (pRoof.get(sas) < 1) {
-//				sPrimes.add(sas.getSprime());
-//			}
-//		}
 		
 		double deltaOmega = model.omega(sa)/2.0;
 		double zeta;
@@ -355,15 +350,17 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		double sasRoofValue;
 //		System.out.println(model.getObservedStates());
 		while (deltaOmega > 0) {
-
-			for(StateAction saDerp : model.getObservedTransKeys()){
-				for(State sprime : model.getObservedStates()){
-					StateActionState sas = new StateActionState(saDerp, sprime);
-					String s = "S: " + sas.getState().getInt(0);
-					s += " A: "+sas.getAction().getInt(0);
-					s += " S' "+sas.getSprime().getInt(0);
-				}
-			}
+			
+//			for(StateAction saDerp : model.getObservedTransKeys()){
+//				for(State sprime : model.getObservedStates()){
+//					StateActionState sas = new StateActionState(saDerp, sprime);
+//					String s = "S: " + sas.getState().getInt(0);
+//					s += " A: "+sas.getAction().getInt(0);
+//					s += " S' "+sas.getSprime().getInt(0);
+//				}
+//			}
+			
+			model.createSetOfSprimes(sa);
 
 			State min = argmin(sa, upper);
 			StateActionState sasFloor = new StateActionState(sa, min);
@@ -427,10 +424,10 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		State max = null;
 		Double tmpValue;
 		int i = 0;
-		for (State s : model.getObservedStates()) {
+		for (State s : model.getSprimes()) {
 			i++;
 			StateActionState sas = new StateActionState(sa, s);
-			if(model.pRoof(sas) < 1){
+			if(model.pTilde(sas) < 1){
 
 				if (upper) {
 					tmpValue = vUppers.get(s);

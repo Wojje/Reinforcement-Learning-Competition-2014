@@ -2,6 +2,8 @@ package agent;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -17,6 +19,7 @@ public class Model {
 
 	private Map<StateActionState, Double> pTilde;
 	private Map<StateActionState, Double> pRoof;
+	private List<State> sPrimes;
 	private Map<StateAction, Integer> NSA;
 	private Map<StateActionState, Integer> NSAS;
 	private Map<StateAction, Double> reward;
@@ -33,12 +36,12 @@ public class Model {
 		reward = new HashMap<>();
 		observedStates = new HashSet<>();
 		observedStateTrans = new HashMap<>();
-		
+
 		this.nbrOfStates = nbrOfStates;
 		this.conf = conf;
 	}
-	
-	public void addStartState(Observation o){
+
+	public void addStartState(Observation o) {
 		observedStates.add(new State(o));
 	}
 
@@ -57,20 +60,19 @@ public class Model {
 		NSAS.put(sas, nsas + 1);
 
 		this.reward.put(sa, reward);
-		
+
 		updateObservedTrans(new StateAction(prev, act), sPrime);
-		
 
 	}
 
 	private void updateObservedTrans(StateAction sa, State sPrime) {
 		Set<State> sprimes = observedStateTrans.get(sa);
-		if(sprimes == null){
+		if (sprimes == null) {
 			sprimes = new HashSet<>();
 			observedStateTrans.put(sa, sprimes);
 		}
 		sprimes.add(sPrime);
-		
+
 	}
 
 	public double pRoof(StateActionState sas) {
@@ -81,11 +83,11 @@ public class Model {
 	public double pTilde(StateActionState sas) {
 		Double d = pTilde.get(sas);
 		double d2 = d == null ? 0 : d;
-//		System.out.println("pTilde: "+d2);
+		// System.out.println("pTilde: "+d2);
 		return d2;
 	}
-	
-	public void updatePTilde(StateActionState sas, double val){
+
+	public void updatePTilde(StateActionState sas, double val) {
 		pTilde.put(sas, val);
 	}
 
@@ -114,25 +116,29 @@ public class Model {
 		createPRoof(sa);
 		pTilde = new HashMap<>(pRoof);
 	}
-	
-	public double omega(StateAction sa){
-		return Math.sqrt( (2 * Math.log(  Math.pow(2, nbrOfStates) - 2 ) - Math.log(conf) ) 
-				/ NSA.get(sa));
+
+	public double omega(StateAction sa) {
+		return Math.sqrt((2 * Math.log(Math.pow(2, nbrOfStates) - 2) - Math
+				.log(conf)) / NSA.get(sa));
 	}
-	
-	public Set<Entry<StateActionState, Double>> pRoofEntries(){
+
+	public Set<Entry<StateActionState, Double>> pRoofEntries() {
 		return pRoof.entrySet();
 	}
-	
+
 	public Set<State> getObservedStates() {
 		return observedStates;
 	}
 	
+	public List<State> getSprimes() {
+		return sPrimes;
+	}
+
 	public int getNbrOfStates() {
 		return nbrOfStates;
 	}
-	
-	public Set<StateAction> getObservedTransKeys(){
+
+	public Set<StateAction> getObservedTransKeys() {
 		return observedStateTrans.keySet();
 	}
 
@@ -143,11 +149,20 @@ public class Model {
 			StateActionState sas = new StateActionState(sa, s);
 			double nsasVal = NSAS(sas);
 			double nsaVal = NSA(sa);
-//			System.out.println("NSAS: "+ nsasVal + " NSA " + nsaVal);
+			// System.out.println("NSAS: "+ nsasVal + " NSA " + nsaVal);
 			prob = NSAS(sas) / ((double) NSA(sa));
 			ret.put(sas, prob);
 		}
 		pRoof = ret;
+	}
+
+	public void createSetOfSprimes(StateAction sa) {
+		sPrimes = new LinkedList<State>();
+		for (StateActionState sas : pRoof.keySet()) {
+			if (pRoof.get(sas) < 1) {
+				sPrimes.add(sas.getSprime());
+			}
+		}
 	}
 
 }
