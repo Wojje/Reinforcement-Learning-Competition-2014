@@ -53,6 +53,8 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	
 	private boolean checkedAllStates;
 	private boolean createUnknownState;
+	
+	private int step = 0;
 
 	private Random randGenerator = new Random();
 	
@@ -60,35 +62,35 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 //		
 //	}
 	
-//	public ConfidenceIntervalAlgorithm(int minState, int maxState, int minAct, int maxAct, double maxRew){
-//		actRangeMax = maxAct;
-//		actRangeMin = minAct;
-//		obsRangeMax = maxState;
-//		obsRangeMin = minState;
-//		this.maxRew = maxRew;
-//		
-//		model = new Model(maxState, conf);
-//		
-////		minRew = theRewardRange.getMin();
-//
-//		vMax = maxRew / (1 - gamma);
-//
-////		observedRewards = new HashMap<StateAction, Double>();
-//		observedStateTrans = new HashMap<StateAction, Set<State>>();
-////		observedStates = new LinkedList<State>();
-//
-////		stateActionCounter = new HashMap<StateAction, Integer>();
-////		stateActionStateCounter = new HashMap<StateActionState, Integer>();
-//		qUppers = new HashMap<StateAction, Double>();
-//		qLowers = new HashMap<StateAction, Double>();
-//		vUppers = new HashMap<State, Double>();
-//		vLowers = new HashMap<State, Double>();
-//	}
-	
-	public static void main(String[] args){
-     	AgentLoader theLoader=new AgentLoader(new ConfidenceIntervalAlgorithm());
-        theLoader.run();
+	public ConfidenceIntervalAlgorithm(int minState, int maxState, int minAct, int maxAct, double maxRew){
+		actRangeMax = maxAct;
+		actRangeMin = minAct;
+		obsRangeMax = maxState;
+		obsRangeMin = minState;
+		this.maxRew = maxRew;
+		
+		model = new Model(maxState, conf);
+		
+//		minRew = theRewardRange.getMin();
+
+		vMax = maxRew / (1 - gamma);
+
+//		observedRewards = new HashMap<StateAction, Double>();
+		observedStateTrans = new HashMap<StateAction, Set<State>>();
+//		observedStates = new LinkedList<State>();
+
+//		stateActionCounter = new HashMap<StateAction, Integer>();
+//		stateActionStateCounter = new HashMap<StateActionState, Integer>();
+		qUppers = new HashMap<StateAction, Double>();
+		qLowers = new HashMap<StateAction, Double>();
+		vUppers = new HashMap<State, Double>();
+		vLowers = new HashMap<State, Double>();
 	}
+	
+//	public static void main(String[] args){
+//     	AgentLoader theLoader=new AgentLoader(new ConfidenceIntervalAlgorithm());
+//        theLoader.run();
+//	}
 
 	public void agent_cleanup() {
 		lastStateAction = null;
@@ -163,6 +165,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	}
 
 	public Action agent_step(double r, Observation o) {
+		step++;
 		State sprime = new State(o);
 //		observedStates.add(new State(o));
 //		observedRewards.put(lastStateAction, r);
@@ -172,13 +175,14 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		
 		model.addObservation(lastStateAction.getState(), lastStateAction.getAction(), sprime, r);
 		
-		
-		updateQ(lastStateAction, true);
-		updateQ(lastStateAction, false);
-		updateQUpper();
-		updateQLower();
-		updateVUpper();
-		updateVLower();
+		if(step == 3){
+			updateQ(lastStateAction, true);
+			updateQ(lastStateAction, false);
+			updateQUpper();
+			updateQLower();
+			updateVUpper();
+			updateVLower();
+		}
 
 		Action bestAction = new Action(1, 0, 0);
 		boolean flags[] = {false, false, false, false, false};
@@ -345,17 +349,30 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 //			}
 //		}
 		
-		double deltaOmega = model.omega(sa);
+		double deltaOmega = model.omega(sa)/2.0;
 		double zeta;
 		double sasFloorValue;
 		double sasRoofValue;
-		
+//		System.out.println(model.getObservedStates());
 		while (deltaOmega > 0) {
+
+			for(StateAction saDerp : model.getObservedTransKeys()){
+				for(State sprime : model.getObservedStates()){
+					StateActionState sas = new StateActionState(saDerp, sprime);
+					String s = "S: " + sas.getState().getInt(0);
+					s += " A: "+sas.getAction().getInt(0);
+					s += " S' "+sas.getSprime().getInt(0);
+				}
+			}
 
 			State min = argmin(sa, upper);
 			StateActionState sasFloor = new StateActionState(sa, min);
 			State max = argmax(sa, upper);
 			StateActionState sasRoof = new StateActionState(sa, max);
+			
+			if(sasFloor.equals(sasRoof)){
+				System.out.println("we are the same!");
+			}
 			
 			sasRoofValue = 1 - model.pTilde(sasRoof);
 			sasFloorValue = model.pTilde(sasFloor);
@@ -373,21 +390,21 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		State min = null;
 		Double tmpValue;
 
-		int i = 0;
+//		int i = 0;
 		for(State s : model.getObservedStates()){
-			i++;
+//			i++;
 			StateActionState sas = new StateActionState(sa, s);
 			if (model.pTilde(sas) > 0) {
 				if (upper) {
 					tmpValue = vUppers.get(s);
-				} else {
+				} else {		
 					tmpValue = vLowers.get(s);
 				}			
 				if (tmpValue == null) {
 					if (upper) {
 						tmpValue = vMax;
 					} else {
-						tmpValue = 0.0;
+						tmpValue = 0.0; // blir fel vi lowerP?
 					}
 				}
 				if (tmpValue < value) {
@@ -431,7 +448,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 					value = tmpValue;
 					max = s;
 				}
-			}	
+			}
 		}
 //		createUnknownState = i != model.getNbrOfStates() && value != vMax; //In case of not all states checked.
 //		if(createUnknownState){
