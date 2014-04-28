@@ -83,7 +83,6 @@ public class Model {
 	public double pTilde(StateActionState sas) {
 		Double d = pTilde.get(sas);
 		double d2 = d == null ? 0 : d;
-		// System.out.println("pTilde: "+d2);
 		return d2;
 	}
 
@@ -118,7 +117,9 @@ public class Model {
 	}
 
 	public double omega(StateAction sa) {
-		return Math.sqrt((2 * Math.log(Math.pow(2, nbrOfStates) - 2) - Math
+//		return Math.sqrt((2 * Math.log(Math.pow(2, nbrOfStates) - 2) - Math
+//				.log(conf)) / NSA.get(sa));
+		return Math.sqrt((2 * Math.log(Math.pow(2, observedStates.size()+1) - 2) - Math
 				.log(conf)) / NSA.get(sa));
 	}
 
@@ -132,6 +133,14 @@ public class Model {
 	
 	public List<State> getSprimes() {
 		return sPrimes;
+	}
+	
+	public Set<State> getPTildeSprimes(){
+		Set<State> ret = new HashSet<>();
+		for(StateActionState sas : pTilde.keySet()){
+			ret.add(sas.getSprime());
+		}
+		return ret;
 	}
 
 	public int getNbrOfStates() {
@@ -153,6 +162,12 @@ public class Model {
 			prob = NSAS(sas) / ((double) NSA(sa));
 			ret.put(sas, prob);
 		}
+		if(observedStates.size() < nbrOfStates){
+			State unknown = new State(new Observation(1, 0));
+			unknown.setInt(0, -5);
+			ret.put(new StateActionState(sa, unknown), 0.0);
+		}
+	
 		pRoof = ret;
 	}
 

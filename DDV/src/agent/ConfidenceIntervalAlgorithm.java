@@ -177,43 +177,54 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		
 		model.addObservation(lastStateAction.getState(), lastStateAction.getAction(), sprime, r);
 		
-		if(step == 3){
-			updateQ(lastStateAction, true);
-			updateQ(lastStateAction, false);
-			updateQUpper();
-			updateQLower();
-			updateVUpper();
-			updateVLower();
+		if(step % 900 == 0){
+//			doAwesomeStuff();
 		}
 
+//		Action bestAction = new Action(1, 0, 0);
+//		boolean flags[] = {false, false, false, false, false};
+//
+//		double bestValue = Double.MIN_VALUE;
+//		for (StateAction sa : qUppers.keySet()) {
+//			if (sa.getState() == sprime) {
+//				double value = qUppers.get(sa);
+//				flags[sa.getAction().intArray[0]] = true;
+//				if (value > bestValue) {
+//					bestAction = sa.getAction();
+//					bestValue = value;
+//				}
+//			}
+//		}
+//		
+//		
+//		for (int i = 0; i <= actRangeMax; i++) {
+//			if (!flags[i]) {
+//				bestAction.intArray[0] = i;
+//			}
+//		}
+//
+//		lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
+//		
+//		System.out.println(bestAction.intArray[0]);
 		Action bestAction = new Action(1, 0, 0);
-		boolean flags[] = {false, false, false, false, false};
-
-		double bestValue = Double.MIN_VALUE;
-		for (StateAction sa : qUppers.keySet()) {
-			if (sa.getState() == sprime) {
-				double value = qUppers.get(sa);
-				flags[sa.getAction().intArray[0]] = true;
-				if (value > bestValue) {
-					bestAction = sa.getAction();
-					bestValue = value;
-				}
-			}
-		}
-		
-		
-		for (int i = 0; i <= actRangeMax; i++) {
-			if (!flags[i]) {
-				bestAction.intArray[0] = i;
-			}
-		}
-
+		bestAction.setInt(0, (int)(Math.random() * (actRangeMax+1)));
+		System.out.println("Action: "+bestAction.getInt(0));
+				
 		lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
-		
-		System.out.println(bestAction.intArray[0]);
 		
 		return bestAction; // return chosen action
 	}
+
+public void doAwesomeStuff() {
+	for(StateAction sa : model.getObservedTransKeys()){
+		updateQ(sa, true);
+		updateQ(sa, false);
+		updateQUpper();
+		updateQLower();
+		updateVUpper();
+		updateVLower();
+	}		
+}
 
 //	private static void updateObservedStateTrans(StateAction lastStateAction,
 //			State sprime) {
@@ -348,7 +359,12 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		double zeta;
 		double sasFloorValue;
 		double sasRoofValue;
-//		System.out.println(model.getObservedStates());
+
+		
+		double temp1;
+		double temp2;
+		
+		//		System.out.println(model.getObservedStates());
 		while (deltaOmega > 0) {
 			
 //			for(StateAction saDerp : model.getObservedTransKeys()){
@@ -363,23 +379,38 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 			model.createSetOfSprimes(sa);
 
 			State min = argmin(sa, upper);
+			if(min == null){
+				return;
+			}
 			StateActionState sasFloor = new StateActionState(sa, min);
 			State max = argmax(sa, upper);
+//			if(max == null){
+//				return;
+//			}
 			StateActionState sasRoof = new StateActionState(sa, max);
 			
 			if(sasFloor.equals(sasRoof)){
 				System.out.println("we are the same!");
 			}
 			
-			sasRoofValue = 1 - model.pTilde(sasRoof);
-			sasFloorValue = model.pTilde(sasFloor);
-//			System.out.println("sasRoofValue: "+sasRoofValue + " sasFloorValue: "+sasFloorValue);
+			
+			temp1 = model.pTilde(sasRoof);			
+			temp2 = model.pTilde(sasFloor);
+			System.out.println("pTildes för sasRoof: "+temp1 + " sasfloor: " + temp2);
+			
+			sasRoofValue = 1 - temp1;
+			sasFloorValue = temp2;
+			System.out.println("sasRoofValue: "+sasRoofValue + " sasFloorValue: "+sasFloorValue + " deltaOmega "+deltaOmega);
 			zeta = Math.min(Math.min(sasRoofValue, sasFloorValue), deltaOmega);
+			
 			model.updatePTilde(sasFloor, sasFloorValue - zeta);
 			model.updatePTilde(sasRoof, sasRoofValue + zeta);
+			System.out.println("DeltaOmega: "+deltaOmega + " Zeta: "+zeta);
 			deltaOmega = deltaOmega - zeta;
+			System.out.println("New DeltaOmega "+deltaOmega);
 //			System.out.println(deltaOmega);
-		}		
+		}	
+		System.out.println("Terminated");
 	}
 
 	private State argmin(StateAction sa, boolean upper) {
