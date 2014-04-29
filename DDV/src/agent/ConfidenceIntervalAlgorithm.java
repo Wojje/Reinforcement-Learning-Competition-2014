@@ -1,5 +1,6 @@
 package agent;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -363,7 +364,8 @@ public void doAwesomeStuff() {
 			boolean upper) {
 		
 		model.initPRoofPTilde(sa);
-		
+		System.out.println("-------NEW ciMOute P TILDE----------");
+		model.printPtilde();
 		
 		double deltaOmega = model.omega(sa)/2.0;
 		double zeta;
@@ -387,14 +389,26 @@ public void doAwesomeStuff() {
 //			}
 			
 			model.createSetOfSprimes(sa);
+			
 
 			State min = argmin(sa, upper);
 			if(min == null){
+				System.out.println("Oj, min var null!");
 				return;
 			}
 			StateActionState sasFloor = new StateActionState(sa, min);
 			State max = argmax(sa, upper);
-//			if(max == null){
+			if(max == null){
+				System.out.println("Oj, max var null!");
+				System.out.println("S' innehöll: " + model.getSprimes().size() + " värden");
+				for(State s:model.getSprimes()){
+					System.out.print(" S: "+ s.getInt(0));
+					System.out.println();
+				}
+				
+				return;
+			}
+			//			if(max == null){
 //				return;
 //			}
 			StateActionState sasRoof = new StateActionState(sa, max);
@@ -425,12 +439,13 @@ public void doAwesomeStuff() {
 			model.printPtilde();
 
 			
-		}	
+		}
+		System.out.println("TERMINATED PTILDE");
 //		System.out.println("Terminated");
 	}
 
 	private State argmin(StateAction sa, boolean upper) {
-		double value = Double.MAX_VALUE;
+		double value = Double.POSITIVE_INFINITY;
 		State min = null;
 		Double tmpValue;
 
@@ -467,7 +482,7 @@ public void doAwesomeStuff() {
 	}
 
 	private  State argmax(StateAction sa, boolean upper) {
-		double value = Double.MIN_VALUE;
+		double value = Double.NEGATIVE_INFINITY;
 		State max = null;
 		Double tmpValue;
 		int i = 0;
