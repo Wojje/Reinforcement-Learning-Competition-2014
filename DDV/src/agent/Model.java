@@ -183,6 +183,20 @@ public class Model {
 		}
 		debug++;
 	}
+	
+	public void printPtilde(){
+		//if(debug%10000 == 0){
+			System.out.println("Ptilde: ");
+			for(Entry<StateActionState,Double> e : pTilde.entrySet()){
+				System.out.print("State: " + e.getKey().getState().getInt(0));
+				System.out.print(" Action: " + e.getKey().getAction().getInt(0));
+				System.out.print(" Future state: " + e.getKey().getSprime().getInt(0));
+				System.out.println(" Likelyhood: " +  e.getValue());
+			}
+		//}
+		//debug++;
+	}
+	
 
 	public void createSetOfSprimes(StateAction sa) {
 		sPrimes = new LinkedList<State>();

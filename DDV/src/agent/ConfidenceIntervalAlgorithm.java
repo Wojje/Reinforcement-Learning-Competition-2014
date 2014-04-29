@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.rlcommunity.rlglue.codec.AgentInterface;
 import org.rlcommunity.rlglue.codec.taskspec.TaskSpec;
@@ -325,6 +326,8 @@ public void doAwesomeStuff() {
 	private void updateQ(StateAction sa, boolean upper) {
 		double tmp;
 		computePTildes(sa, upper);
+		
+		model.printPtilde();
 		
 		Map<State, Double> vals = new HashMap<State, Double>();
 		for (StateAction saPrime : model.getObservedTransKeys()) {
