@@ -324,7 +324,8 @@ public void doAwesomeStuff() {
 
 	private void updateQ(StateAction sa, boolean upper) {
 		double tmp;
-		computePTildes(sa, true);
+		computePTildes(sa, upper);
+		
 		Map<State, Double> vals = new HashMap<State, Double>();
 		for (StateAction saPrime : model.getObservedTransKeys()) {
 			Double d = vals.get(saPrime.getState());
@@ -346,7 +347,7 @@ public void doAwesomeStuff() {
 		for (State s : vals.keySet()) {
 			double val = vals.get(s);
 			sum += model.pTilde(new StateActionState(sa, s))
-					* Math.max(val, vMax);
+					* val;//Math.max(val, vMax);
 		}
 		if (upper) {
 			qUppers.put(sa, model.reward(sa) + gamma * sum);
