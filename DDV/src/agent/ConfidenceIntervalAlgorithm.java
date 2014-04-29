@@ -590,7 +590,12 @@ public void doAwesomeStuff() {
 
 		@Override
 		public int compare(StateAction sa1, StateAction sa2) {
-			return Integer.compare(sa1.getState().getInt(0), sa2.getState().getInt(0));
+			int val = Integer.compare(sa1.getState().getInt(0), sa2.getState().getInt(0));
+			if( val == 0 ){
+				return Integer.compare(sa1.getAction().getInt(0), sa2.getAction().getInt(0));
+			} else {
+				return val;
+			}
 		}
 		
 	}
