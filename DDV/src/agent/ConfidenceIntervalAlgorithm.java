@@ -328,7 +328,7 @@ public void doAwesomeStuff() {
 		double tmp;
 		computePTildes(sa, upper);
 		
-		model.printPtilde();
+		// model.printPtilde();
 		
 		Map<State, Double> vals = new HashMap<State, Double>();
 		for (StateAction saPrime : model.getObservedTransKeys()) {
@@ -364,8 +364,8 @@ public void doAwesomeStuff() {
 			boolean upper) {
 		
 		model.initPRoofPTilde(sa);
-		System.out.println("-------NEW ciMOute P TILDE----------");
-		model.printPtilde();
+//		System.out.println("-------NEW ciMOute P TILDE----------");
+	//	model.printPtilde();
 		
 		double deltaOmega = model.omega(sa)/2.0;
 		double zeta;
@@ -427,7 +427,7 @@ public void doAwesomeStuff() {
 //			System.out.println("sasRoofValue: "+sasRoofValue + " sasFloorValue: "+sasFloorValue + " deltaOmega "+deltaOmega);
 			zeta = Math.min(Math.min(1-temp1, sasFloorValue), deltaOmega);
 			
-			System.out.println("ZETA: " + zeta);
+	//		System.out.println("ZETA: " + zeta);
 			
 			
 			model.updatePTilde(sasFloor, sasFloorValue - zeta);
@@ -436,11 +436,11 @@ public void doAwesomeStuff() {
 			deltaOmega = deltaOmega - zeta;
 //			System.out.println("New DeltaOmega "+deltaOmega);
 //			System.out.println(deltaOmega);
-			model.printPtilde();
+		//	model.printPtilde();
 
 			
 		}
-		System.out.println("TERMINATED PTILDE");
+	//	System.out.println("TERMINATED PTILDE");
 //		System.out.println("Terminated");
 	}
 
