@@ -3,6 +3,9 @@ package experiment;
 import java.util.Collections;
 import java.util.LinkedList;
 
+import org.rlcommunity.rlglue.codec.types.Action;
+import org.rlcommunity.rlglue.codec.types.Observation;
+
 import mdp.GridWorldMDP;
 import mdp.MDP;
 import utils.ActionStep;
@@ -30,28 +33,37 @@ public class GridWorldExperiment {
 		double maxRew = 1.0;
 		ConfidenceIntervalAlgorithm cia = new ConfidenceIntervalAlgorithm(minState, maxState, minAct, maxAct, maxRew);
 		
-		State s = mdp.getStartingState();
-		ActionStep a = new ActionStep(cia.agent_start(s));	
-		State sprime = getNextState(s, a);
+		State start = mdp.getStartingState();
+		State s = null;
+		ActionStep a = new ActionStep(cia.agent_start(start));	
+		State sprime = getNextState(start, a);
 		double rew;
 		if(sprime == null){
-			sprime = s;
+			s = start;
 			rew = 0;
 		} else {
 			rew = mdp.reward(sprime);
+			s = sprime;
 		}
-		for(int step = 1; step < steps; step++){
-			a = new ActionStep(cia.agent_step(rew, sprime));	
+		
+		for(int step = 1; step < steps; ){
+			
+			
+			a = new ActionStep(cia.agent_step(rew, s));
+			
 			sprime = getNextState(s, a);
+			
 			if(sprime == null){
-				sprime = s;
+//				sprime = s;
 				rew = 0;
 			} else {
 				rew = mdp.reward(sprime);
+				s = sprime;
 				step++;
 			}
 		}
 		
+		cia.doAwesomeStuff();
 		cia.printValues();
 		cia.printQValues();
 		
@@ -85,7 +97,7 @@ public class GridWorldExperiment {
 			}
 		}
 		
-		return null;
+		return s;
 	}
 
 	private int nextAction(){
@@ -119,8 +131,19 @@ public class GridWorldExperiment {
 	
 	
 	public static void main(String[] args) {
-		GridWorldExperiment exp = new GridWorldExperiment(new GridWorldMDP(), 10);
+		GridWorldExperiment exp = new GridWorldExperiment(new GridWorldMDP(), 1000);
 		exp.runExperiment();
+		
+//		State s = new State(new Observation(1,0));
+//		s.setInt(0, 9);
+//		ActionStep a = new ActionStep(new Action(1,0));
+//		a.setInt(0, 0);
+//		for(int i = 0; i < 10000; i++){
+//			State sprime = exp.getNextState(s, a);
+//			if(sprime.getInt(0) == 4){
+//				System.out.println("Haxxed");
+//			}
+//		}
 	
 	}
 	
