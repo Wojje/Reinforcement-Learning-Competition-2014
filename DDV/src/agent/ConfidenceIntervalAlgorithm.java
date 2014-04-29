@@ -365,7 +365,6 @@ public void doAwesomeStuff() {
 		model.initPRoofPTilde(sa);
 		
 		
-		
 		double deltaOmega = model.omega(sa)/2.0;
 		double zeta;
 		double sasFloorValue;
@@ -409,10 +408,13 @@ public void doAwesomeStuff() {
 			temp2 = model.pTilde(sasFloor);
 //			System.out.println("pTildes för sasRoof: "+temp1 + " sasfloor: " + temp2);
 			
-			sasRoofValue = 1 - temp1;
+			sasRoofValue = temp1;
 			sasFloorValue = temp2;
 //			System.out.println("sasRoofValue: "+sasRoofValue + " sasFloorValue: "+sasFloorValue + " deltaOmega "+deltaOmega);
-			zeta = Math.min(Math.min(sasRoofValue, sasFloorValue), deltaOmega);
+			zeta = Math.min(Math.min(1-temp1, sasFloorValue), deltaOmega);
+			
+			System.out.println("ZETA: " + zeta);
+			
 			
 			model.updatePTilde(sasFloor, sasFloorValue - zeta);
 			model.updatePTilde(sasRoof, sasRoofValue + zeta);
@@ -420,6 +422,9 @@ public void doAwesomeStuff() {
 			deltaOmega = deltaOmega - zeta;
 //			System.out.println("New DeltaOmega "+deltaOmega);
 //			System.out.println(deltaOmega);
+			model.printPtilde();
+
+			
 		}	
 //		System.out.println("Terminated");
 	}

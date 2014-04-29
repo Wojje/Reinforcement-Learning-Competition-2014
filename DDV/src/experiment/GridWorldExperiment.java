@@ -19,7 +19,7 @@ public class GridWorldExperiment {
 //	private static State currentState;
 	private int steps;
 	private static final int sampleLength = 320;
-	private static final int startSample = 10;
+	private static final int startSample = 50;
 	public GridWorldExperiment(MDP mdp, int nbrOfSteps){
 		this.mdp = mdp;
 		this.steps = nbrOfSteps;
