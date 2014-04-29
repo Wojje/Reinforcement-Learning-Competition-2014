@@ -1,6 +1,9 @@
 package agent;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -552,7 +555,9 @@ public void doAwesomeStuff() {
 //	}
 
 	public void printQValues(){
-		for(StateAction sa : qUppers.keySet()){
+		LinkedList<StateAction> keys = new LinkedList<StateAction>(qUppers.keySet());
+		Collections.sort(keys, new StateActionComparator());
+		for(StateAction sa : keys){
 			String s = "S: "+sa.getState().getInt(0)+
 						" A: "+sa.getAction().getInt(0) +
 						" QUpper: " + qUppers.get(sa) + 
@@ -562,12 +567,32 @@ public void doAwesomeStuff() {
 	}
 	
 	public void printValues(){
-		for(State s : vUppers.keySet()){
+		LinkedList<State> keys = new LinkedList<State>(vUppers.keySet());
+		Collections.sort(keys, new StateComparator());
+		for(State s : keys){
 			String str = "S: "+s.getInt(0)+
 						" VUpper: " + vUppers.get(s) + 
 						" VLower: " + vLowers.get(s);
 			System.out.println(str);
 		}
+	}
+	
+	private class StateComparator implements Comparator<State> {
+
+		@Override
+		public int compare(State s1, State s2) {
+			return Integer.compare(s1.getInt(0), s2.getInt(0));
+		}
+		
+	}
+	
+	private class StateActionComparator implements Comparator<StateAction> {
+
+		@Override
+		public int compare(StateAction sa1, StateAction sa2) {
+			return Integer.compare(sa1.getState().getInt(0), sa2.getState().getInt(0));
+		}
+		
 	}
 	
 }

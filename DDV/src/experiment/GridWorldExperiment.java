@@ -55,6 +55,8 @@ public class GridWorldExperiment {
 			
 			System.out.println("S: "+s.getInt(0) + " A: "+a.getInt(0) + " S' "+sprime.getInt(0));
 			
+			
+			
 			if(sprime == null){
 //				sprime = s;
 				rew = 0;
