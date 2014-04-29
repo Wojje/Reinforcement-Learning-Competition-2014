@@ -166,13 +166,13 @@ public class Model {
 		
 		
 		
-		
+/*		
 		if(observedStates.size() < nbrOfStates){
 			State unknown = new State(new Observation(1, 0));
 			unknown.setInt(0, -5);
 			ret.put(new StateActionState(sa, unknown), 0.0);
 		}
-	
+*/	
 		pRoof = ret;
 		if(debug%10000 == 0){
 			System.out.println("Antal loper i pRoof: " + debug);
@@ -190,7 +190,10 @@ public class Model {
 			for(Entry<StateActionState,Double> e : pTilde.entrySet()){
 				System.out.print("State: " + e.getKey().getState().getInt(0));
 				System.out.print(" Action: " + e.getKey().getAction().getInt(0));
-				System.out.print(" Future state: " + e.getKey().getSprime().getInt(0));
+				if(e.getKey().getSprime() != null)
+					System.out.print(" Future state: " + e.getKey().getSprime().getInt(0));
+				else
+					System.out.print(" Future state: " + "NULL");
 				System.out.println(" Likelyhood: " +  e.getValue());
 			}
 		//}
