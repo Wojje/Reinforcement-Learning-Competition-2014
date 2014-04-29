@@ -159,10 +159,11 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		
 		int theIntAction = randGenerator.nextInt(actRangeMax+1);
 		Action bestAction = new Action(1, 0, 0);
-		bestAction.intArray[0] = theIntAction;
+		bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
+		
 		lastStateAction = new StateAction(stateZero, new ActionStep(bestAction));
 //		updateStateActionCounter(lastStateAction);
-		System.out.println(bestAction.intArray[0]);
+//		System.out.println(bestAction.intArray[0]);
 		return bestAction;
 	}
 
@@ -207,8 +208,13 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 //		
 //		System.out.println(bestAction.intArray[0]);
 		Action bestAction = new Action(1, 0, 0);
-		bestAction.setInt(0, (int)(Math.random() * (actRangeMax+1)));
-		System.out.println("Action: "+bestAction.getInt(0));
+		if(sprime.getInt(0) == 3 || sprime.getInt(0) == 7){
+			bestAction.setInt(0, 4);
+		} else {
+			bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
+		}
+//		bestAction.setInt(0, (int)(Math.random() * (actRangeMax+1)));
+//		System.out.println("Action: "+bestAction.getInt(0));
 				
 		lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
 		
@@ -223,7 +229,8 @@ public void doAwesomeStuff() {
 		updateQLower();
 		updateVUpper();
 		updateVLower();
-	}		
+	}
+//	System.out.println(model.getObservedStates().size());
 }
 
 //	private static void updateObservedStateTrans(StateAction lastStateAction,
@@ -389,28 +396,28 @@ public void doAwesomeStuff() {
 //			}
 			StateActionState sasRoof = new StateActionState(sa, max);
 			
-			if(sasFloor.equals(sasRoof)){
-				System.out.println("we are the same!");
-			}
+//			if(sasFloor.equals(sasRoof)){
+//				System.out.println("we are the same!");
+//			}
 			
 			
 			temp1 = model.pTilde(sasRoof);			
 			temp2 = model.pTilde(sasFloor);
-			System.out.println("pTildes för sasRoof: "+temp1 + " sasfloor: " + temp2);
+//			System.out.println("pTildes för sasRoof: "+temp1 + " sasfloor: " + temp2);
 			
 			sasRoofValue = 1 - temp1;
 			sasFloorValue = temp2;
-			System.out.println("sasRoofValue: "+sasRoofValue + " sasFloorValue: "+sasFloorValue + " deltaOmega "+deltaOmega);
+//			System.out.println("sasRoofValue: "+sasRoofValue + " sasFloorValue: "+sasFloorValue + " deltaOmega "+deltaOmega);
 			zeta = Math.min(Math.min(sasRoofValue, sasFloorValue), deltaOmega);
 			
 			model.updatePTilde(sasFloor, sasFloorValue - zeta);
 			model.updatePTilde(sasRoof, sasRoofValue + zeta);
-			System.out.println("DeltaOmega: "+deltaOmega + " Zeta: "+zeta);
+//			System.out.println("DeltaOmega: "+deltaOmega + " Zeta: "+zeta);
 			deltaOmega = deltaOmega - zeta;
-			System.out.println("New DeltaOmega "+deltaOmega);
+//			System.out.println("New DeltaOmega "+deltaOmega);
 //			System.out.println(deltaOmega);
 		}	
-		System.out.println("Terminated");
+//		System.out.println("Terminated");
 	}
 
 	private State argmin(StateAction sa, boolean upper) {
