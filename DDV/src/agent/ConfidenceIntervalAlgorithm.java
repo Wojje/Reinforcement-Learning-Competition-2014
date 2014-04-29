@@ -30,12 +30,12 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 
 	private static StateAction lastStateAction;
 
-	private double accuracy = 0.1; // Proper value?
+//	private double accuracy = 0.1; // Proper value?
 	private static double conf = 0.05; // Woot?
 
 	private static double gamma = 0.9; // Decay of rewards
 
-	private static double convergenceFactor = 10.0;
+	private static double convergenceFactor = 1.0;
 
 //	private static List<State> observedStates;
 	private static Map<StateAction, Set<State>> observedStateTrans;
@@ -175,9 +175,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		
 		model.addObservation(lastStateAction.getState(), lastStateAction.getAction(), sprime, r);
 		
-		if(step % 900 == 0){
-//			doAwesomeStuff();
-		}
+		doAwesomeStuff();
 
 //		Action bestAction = new Action(1, 0, 0);
 //		boolean flags[] = {false, false, false, false, false};
@@ -321,7 +319,7 @@ public void doAwesomeStuff() {
 
 	private void updateQ(StateAction sa, boolean upper) {
 		double tmp;
-		computePTildes(sa, true);
+		computePTildes(sa, upper);
 		Map<State, Double> vals = new HashMap<State, Double>();
 		for (StateAction saPrime : model.getObservedTransKeys()) {
 			Double d = vals.get(saPrime.getState());
@@ -408,7 +406,7 @@ public void doAwesomeStuff() {
 			zeta = Math.min(Math.min(sasRoofValue, sasFloorValue), deltaOmega);
 			
 			model.updatePTilde(sasFloor, sasFloorValue - zeta);
-			model.updatePTilde(sasRoof, sasRoofValue + zeta);
+			model.updatePTilde(sasRoof, temp1 + zeta);
 //			System.out.println("DeltaOmega: "+deltaOmega + " Zeta: "+zeta);
 			deltaOmega = deltaOmega - zeta;
 //			System.out.println("New DeltaOmega "+deltaOmega);
