@@ -15,10 +15,7 @@ import org.rlcommunity.rlglue.codec.types.Action;
 import org.rlcommunity.rlglue.codec.types.Observation;
 import org.rlcommunity.rlglue.codec.util.AgentLoader;
 
-import utils.ActionStep;
-import utils.State;
-import utils.StateAction;
-import utils.StateActionState;
+import utils.*;
 
 public class ConfidenceIntervalAlgorithm implements AgentInterface {
 

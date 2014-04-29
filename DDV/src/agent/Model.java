@@ -31,11 +31,11 @@ public class Model {
 	public Model(int nbrOfStates, double conf) {
 		// pTilde = new HashMap<>();
 		// pRoof = new HashMap<>();
-		NSA = new HashMap<>();
-		NSAS = new HashMap<>();
-		reward = new HashMap<>();
-		observedStates = new HashSet<>();
-		observedStateTrans = new HashMap<>();
+		NSA = new HashMap<StateAction, Integer>();
+		NSAS = new HashMap<StateActionState, Integer>();
+		reward = new HashMap<StateAction, Double>();
+		observedStates = new HashSet<State>();
+		observedStateTrans = new HashMap<StateAction, Set<State>>();
 
 		this.nbrOfStates = nbrOfStates;
 		this.conf = conf;
@@ -68,7 +68,7 @@ public class Model {
 	private void updateObservedTrans(StateAction sa, State sPrime) {
 		Set<State> sprimes = observedStateTrans.get(sa);
 		if (sprimes == null) {
-			sprimes = new HashSet<>();
+			sprimes = new HashSet<State>();
 			observedStateTrans.put(sa, sprimes);
 		}
 		sprimes.add(sPrime);
@@ -113,7 +113,7 @@ public class Model {
 
 	public void initPRoofPTilde(StateAction sa) {
 		createPRoof(sa);
-		pTilde = new HashMap<>(pRoof);
+		pTilde = new HashMap<StateActionState, Double>(pRoof);
 	}
 
 	public double omega(StateAction sa) {
@@ -136,7 +136,7 @@ public class Model {
 	}
 	
 	public Set<State> getPTildeSprimes(){
-		Set<State> ret = new HashSet<>();
+		Set<State> ret = new HashSet<State>();
 		for(StateActionState sas : pTilde.keySet()){
 			ret.add(sas.getSprime());
 		}

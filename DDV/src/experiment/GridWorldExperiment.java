@@ -76,7 +76,7 @@ public class GridWorldExperiment {
 			return mdp.getStartingState();
 		}
 		
-		LinkedList<StateProb> possible = new LinkedList<>();
+		LinkedList<StateProb> possible = new LinkedList<StateProb>();
 		for(State sprime : mdp.getStates()){
 			StateActionState sas = new StateActionState(s, a, sprime);
 			double prob = mdp.probTransition(sas);
