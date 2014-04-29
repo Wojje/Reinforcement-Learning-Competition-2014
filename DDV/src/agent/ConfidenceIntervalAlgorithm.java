@@ -40,7 +40,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 
 	private static double gamma = 0.9; // Decay of rewards
 
-	private static double convergenceFactor = 10.0;
+	private static double convergenceFactor = 0.01;
 
 //	private static List<State> observedStates;
 	private static Map<StateAction, Set<State>> observedStateTrans;
@@ -333,7 +333,7 @@ public void doAwesomeStuff() {
 		Map<State, Double> vals = new HashMap<State, Double>();
 		for (StateAction saPrime : model.getObservedTransKeys()) {
 			Double d = vals.get(saPrime.getState());
-			double val = (d == null ? Double.MIN_VALUE : d);
+			double val = (d == null ? Double.NEGATIVE_INFINITY : d);
 			if (upper) {
 				Double q = qUppers.get(sa);
 				tmp = (q == null ? vMax : q);

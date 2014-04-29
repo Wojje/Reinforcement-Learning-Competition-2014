@@ -18,7 +18,7 @@ public class GridWorldExperiment {
 	private int maxAct;
 //	private static State currentState;
 	private int steps;
-	private static final int sampleLength = 320;
+	private static final int sampleLength = 10000;
 	private static final int startSample = 50;
 	public GridWorldExperiment(MDP mdp, int nbrOfSteps){
 		this.mdp = mdp;
@@ -56,7 +56,7 @@ public class GridWorldExperiment {
 			
 			sprime = getNextState(s, a);
 			
-			System.out.println("S: "+s.getInt(0) + " A: "+a.getInt(0) + " S' "+sprime.getInt(0));
+			//System.out.println("S: "+s.getInt(0) + " A: "+a.getInt(0) + " S' "+sprime.getInt(0));
 			
 			
 			
