@@ -17,6 +17,8 @@ import utils.StateActionState;
 
 public class Model {
 
+	private int debug=0;
+	
 	private Map<StateActionState, Double> pTilde;
 	private Map<StateActionState, Double> pRoof;
 	private List<State> sPrimes;
@@ -156,20 +158,48 @@ public class Model {
 		double prob;
 		for (State s : observedStates) {
 			StateActionState sas = new StateActionState(sa, s);
-			double nsasVal = NSAS(sas);
-			double nsaVal = NSA(sa);
-			// System.out.println("NSAS: "+ nsasVal + " NSA " + nsaVal);
-			prob = NSAS(sas) / ((double) NSA(sa));
+			double numberOfStateActionStates = NSAS(sas);
+			double numberOfStateActions = NSA(sa);
+			prob = numberOfStateActionStates / numberOfStateActions;
 			ret.put(sas, prob);
 		}
+		
+		
+		
+/*		
 		if(observedStates.size() < nbrOfStates){
 			State unknown = new State(new Observation(1, 0));
 			unknown.setInt(0, -5);
 			ret.put(new StateActionState(sa, unknown), 0.0);
 		}
-	
+*/	
 		pRoof = ret;
+		if(debug%10000 == 0){
+			System.out.println("Antal loper i pRoof: " + debug);
+			for(Entry<StateActionState,Double> e : pRoof.entrySet()){
+				System.out.println("State: " + e.getKey().getState().getInt(0) + " Action: " + e.getKey().getAction().getInt(0) + " Future state: " +
+						e.getKey().getSprime().getInt(0) + " Likelyhood: " +  e.getValue());
+			}
+		}
+		debug++;
 	}
+	
+	public void printPtilde(){
+		//if(debug%10000 == 0){
+			System.out.println("Ptilde: ");
+			for(Entry<StateActionState,Double> e : pTilde.entrySet()){
+				System.out.print("State: " + e.getKey().getState().getInt(0));
+				System.out.print(" Action: " + e.getKey().getAction().getInt(0));
+				if(e.getKey().getSprime() != null)
+					System.out.print(" Future state: " + e.getKey().getSprime().getInt(0));
+				else
+					System.out.print(" Future state: " + "NULL");
+				System.out.println(" Likelyhood: " +  e.getValue());
+			}
+		//}
+		//debug++;
+	}
+	
 
 	public void createSetOfSprimes(StateAction sa) {
 		sPrimes = new LinkedList<State>();

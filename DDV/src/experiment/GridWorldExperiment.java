@@ -18,8 +18,8 @@ public class GridWorldExperiment {
 	private int maxAct;
 //	private static State currentState;
 	private int steps;
-	private static final int sampleLength = 100;
-	private static final int startSample = 10;
+	private static final int sampleLength = 320;
+	private static final int startSample = 50;
 	public GridWorldExperiment(MDP mdp, int nbrOfSteps){
 		this.mdp = mdp;
 		this.steps = nbrOfSteps;
@@ -58,6 +58,8 @@ public class GridWorldExperiment {
 			
 			System.out.println("S: "+s.getInt(0) + " A: "+a.getInt(0) + " S' "+sprime.getInt(0));
 			
+			
+			
 			if(sprime == null){
 //				sprime = s;
 				rew = 0;
@@ -68,6 +70,7 @@ public class GridWorldExperiment {
 			}
 			
 			if(step == numberOfAlgorithmRuns){
+				System.out.println("Antal samples: " + step);
 				cia.doAwesomeStuff();
 				cia.printValues();
 				cia.printQValues();

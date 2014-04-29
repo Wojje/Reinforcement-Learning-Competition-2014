@@ -19,7 +19,7 @@ public class GridWorldTest {
 
 	@Before
 	public void setUp() throws Exception {
-		mdp = new GridWorldMDP(1, -1,  -0.01, 0.8);
+		mdp = new GridWorldMDP(1, -1,  -0.00, 0.8);
 	
 	}
 
@@ -244,6 +244,9 @@ public class GridWorldTest {
 		
 		//Going east and mistakenly bumps into wall
 		testProbCase(states.get(2), as.get(3), states.get(2), 0.1);
+		
+		//9 to 4 by action 4 (EXIT)
+		testProbCase(states.get(9), as.get(1), states.get(4), 0.0);
 		
 		
 	}

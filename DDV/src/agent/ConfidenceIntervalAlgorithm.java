@@ -1,11 +1,15 @@
 package agent;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.rlcommunity.rlglue.codec.AgentInterface;
 import org.rlcommunity.rlglue.codec.taskspec.TaskSpec;
@@ -320,6 +324,7 @@ public void doAwesomeStuff() {
 	private void updateQ(StateAction sa, boolean upper) {
 		double tmp;
 		computePTildes(sa, upper);
+		model.printPtilde();
 		Map<State, Double> vals = new HashMap<State, Double>();
 		for (StateAction saPrime : model.getObservedTransKeys()) {
 			Double d = vals.get(saPrime.getState());
@@ -341,7 +346,7 @@ public void doAwesomeStuff() {
 		for (State s : vals.keySet()) {
 			double val = vals.get(s);
 			sum += model.pTilde(new StateActionState(sa, s))
-					* Math.max(val, vMax);
+					* val;//Math.max(val, vMax);
 		}
 		if (upper) {
 			qUppers.put(sa, model.reward(sa) + gamma * sum);
@@ -354,7 +359,6 @@ public void doAwesomeStuff() {
 			boolean upper) {
 		
 		model.initPRoofPTilde(sa);
-		
 		
 		
 		double deltaOmega = model.omega(sa)/2.0;
@@ -400,10 +404,13 @@ public void doAwesomeStuff() {
 			temp2 = model.pTilde(sasFloor);
 //			System.out.println("pTildes för sasRoof: "+temp1 + " sasfloor: " + temp2);
 			
-			sasRoofValue = 1 - temp1;
+			sasRoofValue = temp1;
 			sasFloorValue = temp2;
 //			System.out.println("sasRoofValue: "+sasRoofValue + " sasFloorValue: "+sasFloorValue + " deltaOmega "+deltaOmega);
-			zeta = Math.min(Math.min(sasRoofValue, sasFloorValue), deltaOmega);
+			zeta = Math.min(Math.min(1-temp1, sasFloorValue), deltaOmega);
+			
+			System.out.println("ZETA: " + zeta);
+			
 			
 			model.updatePTilde(sasFloor, sasFloorValue - zeta);
 			model.updatePTilde(sasRoof, temp1 + zeta);
@@ -411,6 +418,9 @@ public void doAwesomeStuff() {
 			deltaOmega = deltaOmega - zeta;
 //			System.out.println("New DeltaOmega "+deltaOmega);
 //			System.out.println(deltaOmega);
+			model.printPtilde();
+
+			
 		}	
 //		System.out.println("Terminated");
 	}
@@ -550,7 +560,9 @@ public void doAwesomeStuff() {
 //	}
 
 	public void printQValues(){
-		for(StateAction sa : qUppers.keySet()){
+		LinkedList<StateAction> keys = new LinkedList<StateAction>(qUppers.keySet());
+		Collections.sort(keys, new StateActionComparator());
+		for(StateAction sa : keys){
 			String s = "S: "+sa.getState().getInt(0)+
 						" A: "+sa.getAction().getInt(0) +
 						" QUpper: " + qUppers.get(sa) + 
@@ -560,12 +572,37 @@ public void doAwesomeStuff() {
 	}
 	
 	public void printValues(){
-		for(State s : vUppers.keySet()){
+		LinkedList<State> keys = new LinkedList<State>(vUppers.keySet());
+		Collections.sort(keys, new StateComparator());
+		for(State s : keys){
 			String str = "S: "+s.getInt(0)+
 						" VUpper: " + vUppers.get(s) + 
 						" VLower: " + vLowers.get(s);
 			System.out.println(str);
 		}
+	}
+	
+	private class StateComparator implements Comparator<State> {
+
+		@Override
+		public int compare(State s1, State s2) {
+			return Integer.compare(s1.getInt(0), s2.getInt(0));
+		}
+		
+	}
+	
+	private class StateActionComparator implements Comparator<StateAction> {
+
+		@Override
+		public int compare(StateAction sa1, StateAction sa2) {
+			int val = Integer.compare(sa1.getState().getInt(0), sa2.getState().getInt(0));
+			if( val == 0 ){
+				return Integer.compare(sa1.getAction().getInt(0), sa2.getAction().getInt(0));
+			} else {
+				return val;
+			}
+		}
+		
 	}
 	
 }
