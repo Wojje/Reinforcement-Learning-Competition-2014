@@ -65,30 +65,30 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 //		
 //	}
 	
-	public ConfidenceIntervalAlgorithm(int minState, int maxState, int minAct, int maxAct, double maxRew){
-		actRangeMax = maxAct;
-		actRangeMin = minAct;
-		obsRangeMax = maxState;
-		obsRangeMin = minState;
-		this.maxRew = maxRew;
-		
-		model = new Model(maxState, conf);
-		
-//		minRew = theRewardRange.getMin();
-
-		vMax = maxRew / (1 - gamma);
-
-//		observedRewards = new HashMap<StateAction, Double>();
-		observedStateTrans = new HashMap<StateAction, Set<State>>();
-//		observedStates = new LinkedList<State>();
-
-//		stateActionCounter = new HashMap<StateAction, Integer>();
-//		stateActionStateCounter = new HashMap<StateActionState, Integer>();
-		qUppers = new HashMap<StateAction, Double>();
-		qLowers = new HashMap<StateAction, Double>();
-		vUppers = new HashMap<State, Double>();
-		vLowers = new HashMap<State, Double>();
-	}
+//	public ConfidenceIntervalAlgorithm(int minState, int maxState, int minAct, int maxAct, double maxRew){
+//		actRangeMax = maxAct;
+//		actRangeMin = minAct;
+//		obsRangeMax = maxState;
+//		obsRangeMin = minState;
+//		this.maxRew = maxRew;
+//		
+//		model = new Model(maxState, conf);
+//		
+////		minRew = theRewardRange.getMin();
+//
+//		vMax = maxRew / (1 - gamma);
+//
+////		observedRewards = new HashMap<StateAction, Double>();
+//		observedStateTrans = new HashMap<StateAction, Set<State>>();
+////		observedStates = new LinkedList<State>();
+//
+////		stateActionCounter = new HashMap<StateAction, Integer>();
+////		stateActionStateCounter = new HashMap<StateActionState, Integer>();
+//		qUppers = new HashMap<StateAction, Double>();
+//		qLowers = new HashMap<StateAction, Double>();
+//		vUppers = new HashMap<State, Double>();
+//		vLowers = new HashMap<State, Double>();
+//	}
 	
 //	public static void main(String[] args){
 //     	AgentLoader theLoader=new AgentLoader(new ConfidenceIntervalAlgorithm());
@@ -158,19 +158,25 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 //		observedStates.add(stateZero);
 		model.addStartState(newObservation);
 		
-		int theIntAction = randGenerator.nextInt(actRangeMax+1);
+
 		Action bestAction = new Action(1, 0, 0);
-		bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
+		
+		bestAction.setInt(0, (int)(Math.random() * (actRangeMax+1)));
+		
+		
+//		bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
 		
 		lastStateAction = new StateAction(stateZero, new ActionStep(bestAction));
 //		updateStateActionCounter(lastStateAction);
-//		System.out.println(bestAction.intArray[0]);
+		System.out.println("Action: " + bestAction.intArray[0]);
 		return bestAction;
 	}
 
 	public Action agent_step(double r, Observation o) {
 		step++;
 		State sprime = new State(o);
+
+		System.out.println("state: " + sprime.intArray[0]);
 //		observedStates.add(new State(o));
 //		observedRewards.put(lastStateAction, r);
 //		updateObservedStateTrans(lastStateAction, sprime);
@@ -179,7 +185,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		
 		model.addObservation(lastStateAction.getState(), lastStateAction.getAction(), sprime, r);
 		
-		doAwesomeStuff();
+		doAwesomeStuff(lastStateAction);
 
 //		Action bestAction = new Action(1, 0, 0);
 //		boolean flags[] = {false, false, false, false, false};
@@ -205,30 +211,41 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 //
 //		lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
 //		
-//		System.out.println(bestAction.intArray[0]);
+
+		
 		Action bestAction = new Action(1, 0, 0);
-		if(sprime.getInt(0) == 3 || sprime.getInt(0) == 7){
-			bestAction.setInt(0, 4);
-		} else {
-			bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
-		}
-//		bestAction.setInt(0, (int)(Math.random() * (actRangeMax+1)));
+
+		
+//		if(sprime.getInt(0) == 3 || sprime.getInt(0) == 7){
+//			bestAction.setInt(0, 4);
+//		} else {
+//			bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
+//		}
+
+		
+		bestAction.setInt(0, (int)(Math.random() * (actRangeMax+1)));
 //		System.out.println("Action: "+bestAction.getInt(0));
 				
 		lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
 		
+		System.out.println("Action: " + bestAction.intArray[0]);
+		
 		return bestAction; // return chosen action
 	}
 
-public void doAwesomeStuff() {
-	for(StateAction sa : model.getObservedTransKeys()){
+public void doAwesomeStuff(StateAction sa) {
+	
+		System.out.println("Qupper before: " + qUppers.get(sa));
 		updateQ(sa, true);
+		System.out.println("Qupper after: " + qUppers.get(sa));
+		System.out.println("Qlower before: " + qLowers.get(sa));
 		updateQ(sa, false);
-		updateQUpper();
-		updateQLower();
-		updateVUpper();
-		updateVLower();
-	}
+		System.out.println("Qlower after: " + qLowers.get(sa));
+//		updateQUpper();
+//		updateQLower();
+//		updateVUpper();
+//		updateVLower();
+
 //	System.out.println(model.getObservedStates().size());
 }
 
@@ -328,7 +345,7 @@ public void doAwesomeStuff() {
 		Map<State, Double> vals = new HashMap<State, Double>();
 		for (StateAction saPrime : model.getObservedTransKeys()) {
 			Double d = vals.get(saPrime.getState());
-			double val = (d == null ? Double.MIN_VALUE : d);
+			double val = (d == null ? Double.NEGATIVE_INFINITY : d);
 			if (upper) {
 				Double q = qUppers.get(sa);
 				tmp = (q == null ? vMax : q);
@@ -365,10 +382,6 @@ public void doAwesomeStuff() {
 		double zeta;
 		double sasFloorValue;
 		double sasRoofValue;
-
-		
-		double temp1;
-		double temp2;
 		
 		//		System.out.println(model.getObservedStates());
 		while (deltaOmega > 0) {
@@ -400,20 +413,19 @@ public void doAwesomeStuff() {
 //			}
 			
 			
-			temp1 = model.pTilde(sasRoof);			
-			temp2 = model.pTilde(sasFloor);
-//			System.out.println("pTildes för sasRoof: "+temp1 + " sasfloor: " + temp2);
+			sasRoofValue = model.pTilde(sasRoof);			
+			sasFloorValue = model.pTilde(sasFloor);
+//			System.out.println("pTildes for sasRoof: "+temp1 + " sasfloor: " + temp2);
 			
-			sasRoofValue = temp1;
-			sasFloorValue = temp2;
+
 //			System.out.println("sasRoofValue: "+sasRoofValue + " sasFloorValue: "+sasFloorValue + " deltaOmega "+deltaOmega);
-			zeta = Math.min(Math.min(1-temp1, sasFloorValue), deltaOmega);
+			zeta = Math.min(Math.min(1-sasRoofValue, sasFloorValue), deltaOmega);
 			
-			System.out.println("ZETA: " + zeta);
+//			System.out.println("ZETA: " + zeta);
 			
 			
 			model.updatePTilde(sasFloor, sasFloorValue - zeta);
-			model.updatePTilde(sasRoof, temp1 + zeta);
+			model.updatePTilde(sasRoof, sasRoofValue + zeta);
 //			System.out.println("DeltaOmega: "+deltaOmega + " Zeta: "+zeta);
 			deltaOmega = deltaOmega - zeta;
 //			System.out.println("New DeltaOmega "+deltaOmega);
@@ -463,7 +475,7 @@ public void doAwesomeStuff() {
 	}
 
 	private  State argmax(StateAction sa, boolean upper) {
-		double value = Double.MIN_VALUE;
+		double value = Double.NEGATIVE_INFINITY;
 		State max = null;
 		Double tmpValue;
 		int i = 0;

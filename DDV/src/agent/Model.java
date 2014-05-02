@@ -181,11 +181,11 @@ public class Model {
 						e.getKey().getSprime().getInt(0) + " Likelyhood: " +  e.getValue());
 			}
 		}
-		debug++;
+		//debug++;
 	}
 	
 	public void printPtilde(){
-		//if(debug%10000 == 0){
+		if(debug%10000 == 0){
 			System.out.println("Ptilde: ");
 			for(Entry<StateActionState,Double> e : pTilde.entrySet()){
 				System.out.print("State: " + e.getKey().getState().getInt(0));
@@ -196,7 +196,7 @@ public class Model {
 					System.out.print(" Future state: " + "NULL");
 				System.out.println(" Likelyhood: " +  e.getValue());
 			}
-		//}
+		}
 		//debug++;
 	}
 	
