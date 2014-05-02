@@ -1,5 +1,6 @@
 package agent;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import org.rlcommunity.rlglue.codec.taskspec.ranges.DoubleRange;
 import org.rlcommunity.rlglue.codec.taskspec.ranges.IntRange;
 import org.rlcommunity.rlglue.codec.types.Action;
 import org.rlcommunity.rlglue.codec.types.Observation;
+import org.rlcommunity.rlglue.codec.types.RL_abstract_type;
 import org.rlcommunity.rlglue.codec.util.AgentLoader;
 
 import utils.*;
@@ -39,7 +41,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 
 	private static double gamma = 0.9; // Decay of rewards
 
-	private static double convergenceFactor = 1.0;
+	private static double convergenceFactor = 0.01;
 
 //	private static List<State> observedStates;
 	private static Map<StateAction, Set<State>> observedStateTrans;
@@ -339,44 +341,48 @@ public void doAwesomeStuff(StateAction sa) {
 	}
 
 	private void updateQ(StateAction sa, boolean upper) {
-		double tmp;
+		double sum = 0.0;
+		
 		computePTildes(sa, upper);
-		model.printPtilde();
-		Map<State, Double> vals = new HashMap<State, Double>();
-		for (StateAction saPrime : model.getObservedTransKeys()) {
-			Double d = vals.get(saPrime.getState());
-			double val = (d == null ? Double.NEGATIVE_INFINITY : d);
-			if (upper) {
-				Double q = qUppers.get(sa);
-				tmp = (q == null ? vMax : q);
-			} else {
-				Double q = qLowers.get(sa);
-				tmp = (q == null ? 0.0 : q);
+		
+		for(State obs : model.getObservedStates()){
+			StateActionState obsobs = new StateActionState(sa, obs);
+			if(model.pTilde(obsobs)==0.0){
+				continue;
 			}
-
-			if (tmp > val) {
-				vals.put(saPrime.getState(), tmp);
+			else{
+				sum+= model.pTilde(obsobs)*computeActionMaxQ(obs);
 			}
-
 		}
-		double sum = 0;
-		for (State s : vals.keySet()) {
-			double val = vals.get(s);
-			sum += model.pTilde(new StateActionState(sa, s))
-					* val;//Math.max(val, vMax);
-		}
-		if (upper) {
+		if(upper)
 			qUppers.put(sa, model.reward(sa) + gamma * sum);
-		} else {
-			qLowers.put(sa, model.reward(sa) + gamma * sum);
+	}
+	
+	private double computeActionMaxQ(State obs){
+		double biggest = Double.NEGATIVE_INFINITY;
+		for(int a = actRangeMin; a <= actRangeMax;a++){
+			Action action = new Action(1,0);
+			action.setInt(0,a);
+			StateAction sa = new StateAction(obs, new ActionStep(action));
+			Double lookUp = qUppers.get(sa);
+			if(lookUp == null){
+				lookUp=vMax;
+			}
+			if(lookUp > biggest){
+				biggest = lookUp;
+			}
 		}
+		
+		
+		return biggest;
 	}
 
 	private void computePTildes(StateAction sa,
 			boolean upper) {
 		
 		model.initPRoofPTilde(sa);
-		
+//		System.out.println("-------NEW ciMOute P TILDE----------");
+	//	model.printPtilde();
 		
 		double deltaOmega = model.omega(sa)/2.0;
 		double zeta;
@@ -396,14 +402,26 @@ public void doAwesomeStuff(StateAction sa) {
 //			}
 			
 			model.createSetOfSprimes(sa);
+			
 
 			State min = argmin(sa, upper);
 			if(min == null){
+				System.out.println("Oj, min var null!");
 				return;
 			}
 			StateActionState sasFloor = new StateActionState(sa, min);
 			State max = argmax(sa, upper);
-//			if(max == null){
+			if(max == null){
+				System.out.println("Oj, max var null!");
+				System.out.println("S' innehöll: " + model.getSprimes().size() + " värden");
+				for(State s:model.getSprimes()){
+					System.out.print(" S: "+ s.getInt(0));
+					System.out.println();
+				}
+				
+				return;
+			}
+			//			if(max == null){
 //				return;
 //			}
 			StateActionState sasRoof = new StateActionState(sa, max);
@@ -420,25 +438,26 @@ public void doAwesomeStuff(StateAction sa) {
 
 //			System.out.println("sasRoofValue: "+sasRoofValue + " sasFloorValue: "+sasFloorValue + " deltaOmega "+deltaOmega);
 			zeta = Math.min(Math.min(1-sasRoofValue, sasFloorValue), deltaOmega);
-			
+
 //			System.out.println("ZETA: " + zeta);
 			
 			
 			model.updatePTilde(sasFloor, sasFloorValue - zeta);
-			model.updatePTilde(sasRoof, sasRoofValue + zeta);
+			model.updatePTilde(sasRoof, model.pTilde(sasFloor) + zeta);
 //			System.out.println("DeltaOmega: "+deltaOmega + " Zeta: "+zeta);
 			deltaOmega = deltaOmega - zeta;
 //			System.out.println("New DeltaOmega "+deltaOmega);
 //			System.out.println(deltaOmega);
-			model.printPtilde();
+		//	model.printPtilde();
 
 			
-		}	
+		}
+	//	System.out.println("TERMINATED PTILDE");
 //		System.out.println("Terminated");
 	}
 
 	private State argmin(StateAction sa, boolean upper) {
-		double value = Double.MAX_VALUE;
+		double value = Double.POSITIVE_INFINITY;
 		State min = null;
 		Double tmpValue;
 
@@ -509,67 +528,6 @@ public void doAwesomeStuff(StateAction sa) {
 //		}
 		return max;
 	}
-
-//	private static double omega(int nsa) {
-//		return Math.sqrt((2 * Math.log(Math.pow(2, obsRangeMax) - 2) - Math
-//				.log(conf)) / nsa);
-//	}
-
-//	private static Map<StateActionState, Double> createPRoof(StateAction sa) {
-//		Map<StateActionState, Double> ret = new HashMap<StateActionState, Double>();
-//		double prob;
-//		for (State s : observedStates) {
-//			StateActionState sas = new StateActionState(sa, s);
-//			prob = getCount(sas) / getCount(sa);
-//			ret.put(sas, prob);
-//		}
-//		return ret;
-//	}
-	
-//	private static double getFromProbDist(Map<StateActionState, Double> incompletPD,
-//										StateActionState sas){
-//		Double d = incompletPD.get(sas);
-//		return d == null ? 0.0 : d;
-//	}
-
-//	private static Integer getCount(StateAction sa) {
-//		Integer i = stateActionCounter.get(sa);
-//		return i == null ? 0 : i;
-//	}
-
-//	private static Integer getCount(StateActionState sas) {
-//		Integer i = stateActionStateCounter.get(sas);
-//		return i == null ? 0 : i;
-//	}
-
-//	private static double obsRew(StateAction sa) {
-//		Double d = observedRewards.get(sa);
-//		if (d == null) {
-//			return 0;
-//		} else {
-//			return d;
-//		}
-//	}
-
-//	private void computePolicy() {
-//		// TODO Auto-generated method stubs
-//	}
-//
-//	private double computeQPrimeUpper(StateAction sa) {
-//		if (observedStateTrans.containsKey(sa)) {
-//			return model.reward(sa) + gamma * maxRew / (1 - gamma);
-//		} else {
-//			return maxRew / 2 + gamma * maxRew / (1 - gamma);
-//		}
-//	}
-//
-//	private double computeQPrimeLower(StateAction sa) {
-//		if (observedStateTrans.containsKey(sa)) {
-//			return model.reward(sa);
-//		} else {
-//			return maxRew / 2;
-//		}
-//	}
 
 	public void printQValues(){
 		LinkedList<StateAction> keys = new LinkedList<StateAction>(qUppers.keySet());

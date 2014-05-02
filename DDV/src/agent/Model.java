@@ -174,18 +174,26 @@ public class Model {
 		}
 */	
 		pRoof = ret;
-		if(debug%10000 == 0){
+/*		if(debug%10000 == 0){
 			System.out.println("Antal loper i pRoof: " + debug);
 			for(Entry<StateActionState,Double> e : pRoof.entrySet()){
 				System.out.println("State: " + e.getKey().getState().getInt(0) + " Action: " + e.getKey().getAction().getInt(0) + " Future state: " +
 						e.getKey().getSprime().getInt(0) + " Likelyhood: " +  e.getValue());
 			}
 		}
+<<<<<<< HEAD
 		//debug++;
 	}
 	
 	public void printPtilde(){
 		if(debug%10000 == 0){
+=======
+		debug++;*/
+	}
+	
+/*	public void printPtilde(){
+		//if(debug%10000 == 0){
+>>>>>>> f73f8895e10505522f89faa5e16b3c711db92e6a
 			System.out.println("Ptilde: ");
 			for(Entry<StateActionState,Double> e : pTilde.entrySet()){
 				System.out.print("State: " + e.getKey().getState().getInt(0));
@@ -200,7 +208,7 @@ public class Model {
 		//debug++;
 	}
 	
-
+*/
 	public void createSetOfSprimes(StateAction sa) {
 		sPrimes = new LinkedList<State>();
 		for (StateActionState sas : pRoof.keySet()) {
