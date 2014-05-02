@@ -278,9 +278,6 @@ public void doAwesomeStuff() {
 				continue;
 			}
 			else{
-	//			model.printPtilde();
-		//		System.out.println("Till summan adderas ptilde: " + model.pTilde(obsobs));
-			//	System.out.println("multipliceras med bästa action för ett nästkommande state: " + computeActionMaxQ(obs));
 				sum+= model.pTilde(obsobs)*computeActionMaxQ(obs);
 			}
 		}
@@ -337,26 +334,14 @@ public void doAwesomeStuff() {
 			boolean upper) {
 		
 		model.initPRoofPTilde(sa);
-//		System.out.println("-------NEW ciMOute P TILDE----------");
-//		model.printPtilde();
 		
 		double deltaOmega = model.omega(sa)/2.0;
 		double zeta;
 		double sasFloorValue;
 		double sasRoofValue;
 
-		int debug =0 ; 		
-		//		System.out.println(model.getObservedStates());
 		while (deltaOmega > 0) {
 
-//			for(StateAction saDerp : model.getObservedTransKeys()){
-//				for(State sprime : model.getObservedStates()){
-//					StateActionState sas = new StateActionState(saDerp, sprime);
-//					String s = "S: " + sas.getState().getInt(0);
-//					s += " A: "+sas.getAction().getInt(0);
-//					s += " S' "+sas.getSprime().getInt(0);
-//				}
-//			}
 			
 			model.createSetOfSprimes(sa);
 			
@@ -391,24 +376,8 @@ public void doAwesomeStuff() {
 			
 			model.updatePTilde(sasFloor, sasFloorValue - zeta);
 			model.updatePTilde(sasRoof, model.pTilde(sasRoof) + zeta);
-//			System.out.println("DeltaOmega: "+deltaOmega + " Zeta: "+zeta);
 			deltaOmega = deltaOmega - zeta;
-			
-			debug ++;
-			
-			if(debug%100000 == 0){
-				System.out.println("Jäklar vad det snurrar ZETA: " + zeta);
-				System.out.println("Omega: " + deltaOmega);
-
 			}
-//			System.out.println("New DeltaOmega "+deltaOmega);
-//			System.out.println(deltaOmega);
-		//	model.printPtilde();
-			//System.out.println("");
-			
-		}
-	//	System.out.println("TERMINATED PTILDE");
-//		System.out.println("Terminated");
 	}
 
 	private State argmin(StateAction sa, boolean upper) {
