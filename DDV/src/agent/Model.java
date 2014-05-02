@@ -85,6 +85,9 @@ public class Model {
 	public double pTilde(StateActionState sas) {
 		Double d = pTilde.get(sas);
 		double d2 = d == null ? 0 : d;
+		if(d2 < 0.0000001){
+			d2=0;
+		}
 		return d2;
 	}
 
@@ -181,19 +184,11 @@ public class Model {
 						e.getKey().getSprime().getInt(0) + " Likelyhood: " +  e.getValue());
 			}
 		}
-<<<<<<< HEAD
-		//debug++;
-	}
-	
-	public void printPtilde(){
-		if(debug%10000 == 0){
-=======
 		debug++;*/
 	}
 	
-/*	public void printPtilde(){
+	public void printPtilde(){
 		//if(debug%10000 == 0){
->>>>>>> f73f8895e10505522f89faa5e16b3c711db92e6a
 			System.out.println("Ptilde: ");
 			for(Entry<StateActionState,Double> e : pTilde.entrySet()){
 				System.out.print("State: " + e.getKey().getState().getInt(0));
@@ -204,11 +199,11 @@ public class Model {
 					System.out.print(" Future state: " + "NULL");
 				System.out.println(" Likelyhood: " +  e.getValue());
 			}
-		}
+		//}
 		//debug++;
 	}
 	
-*/
+
 	public void createSetOfSprimes(StateAction sa) {
 		sPrimes = new LinkedList<State>();
 		for (StateActionState sas : pRoof.keySet()) {
@@ -218,4 +213,8 @@ public class Model {
 		}
 	}
 
+	public void removeSprime(State min){
+		sPrimes.remove(min);
+	}
+	
 }

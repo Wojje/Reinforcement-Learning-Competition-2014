@@ -351,11 +351,18 @@ public void doAwesomeStuff(StateAction sa) {
 				continue;
 			}
 			else{
+	//			model.printPtilde();
+		//		System.out.println("Till summan adderas ptilde: " + model.pTilde(obsobs));
+			//	System.out.println("multipliceras med bästa action för ett nästkommande state: " + computeActionMaxQ(obs));
 				sum+= model.pTilde(obsobs)*computeActionMaxQ(obs);
 			}
 		}
-		if(upper)
+		if(upper){
+			double temp = model.reward(sa) + gamma * sum;
+		//	System.out.println("Detta värde går in i Q-listan " + temp);
 			qUppers.put(sa, model.reward(sa) + gamma * sum);
+		}
+		
 	}
 	
 	private double computeActionMaxQ(State obs){
@@ -382,16 +389,16 @@ public void doAwesomeStuff(StateAction sa) {
 		
 		model.initPRoofPTilde(sa);
 //		System.out.println("-------NEW ciMOute P TILDE----------");
-	//	model.printPtilde();
+//		model.printPtilde();
 		
 		double deltaOmega = model.omega(sa)/2.0;
 		double zeta;
 		double sasFloorValue;
 		double sasRoofValue;
-		
-		//		System.out.println(model.getObservedStates());
+		int debug =0 ; 		
+//		System.out.println(model.getObservedStates());
 		while (deltaOmega > 0) {
-			
+
 //			for(StateAction saDerp : model.getObservedTransKeys()){
 //				for(State sprime : model.getObservedStates()){
 //					StateActionState sas = new StateActionState(saDerp, sprime);
@@ -409,7 +416,9 @@ public void doAwesomeStuff(StateAction sa) {
 				System.out.println("Oj, min var null!");
 				return;
 			}
+			model.removeSprime(min);
 			StateActionState sasFloor = new StateActionState(sa, min);
+
 			State max = argmax(sa, upper);
 			if(max == null){
 				System.out.println("Oj, max var null!");
@@ -421,35 +430,30 @@ public void doAwesomeStuff(StateAction sa) {
 				
 				return;
 			}
-			//			if(max == null){
-//				return;
-//			}
 			StateActionState sasRoof = new StateActionState(sa, max);
 			
-//			if(sasFloor.equals(sasRoof)){
-//				System.out.println("we are the same!");
-//			}
-			
-			
-			sasRoofValue = model.pTilde(sasRoof);			
+			sasRoofValue = model.pTilde(sasRoof);
 			sasFloorValue = model.pTilde(sasFloor);
-//			System.out.println("pTildes for sasRoof: "+temp1 + " sasfloor: " + temp2);
-			
-
-//			System.out.println("sasRoofValue: "+sasRoofValue + " sasFloorValue: "+sasFloorValue + " deltaOmega "+deltaOmega);
 			zeta = Math.min(Math.min(1-sasRoofValue, sasFloorValue), deltaOmega);
-
-//			System.out.println("ZETA: " + zeta);
 			
+
 			
 			model.updatePTilde(sasFloor, sasFloorValue - zeta);
-			model.updatePTilde(sasRoof, model.pTilde(sasFloor) + zeta);
+			model.updatePTilde(sasRoof, model.pTilde(sasRoof) + zeta);
 //			System.out.println("DeltaOmega: "+deltaOmega + " Zeta: "+zeta);
 			deltaOmega = deltaOmega - zeta;
+			
+			debug ++;
+			
+			if(debug%100000 == 0){
+				System.out.println("Jäklar vad det snurrar ZETA: " + zeta);
+				System.out.println("Omega: " + deltaOmega);
+
+			}
 //			System.out.println("New DeltaOmega "+deltaOmega);
 //			System.out.println(deltaOmega);
 		//	model.printPtilde();
-
+			//System.out.println("");
 			
 		}
 	//	System.out.println("TERMINATED PTILDE");
