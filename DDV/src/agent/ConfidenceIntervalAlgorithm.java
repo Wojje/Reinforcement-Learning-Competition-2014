@@ -24,8 +24,9 @@ import org.rlcommunity.rlglue.codec.util.AgentLoader;
 import utils.*;
 
 public class ConfidenceIntervalAlgorithm implements AgentInterface {
+	private static final int startSample = 50;
+	private static int numberOfAlgorithmRuns = startSample;
 
-	
 	private double totalReward = 0;
 	boolean optimistic;
 	
@@ -185,6 +186,13 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 //				sprime));
 		
 		model.addObservation(lastStateAction.getState(), lastStateAction.getAction(), sprime, r);
+		
+		if(step == numberOfAlgorithmRuns){
+			System.out.println("Antal samples: " + step);
+			doAwesomeStuff();
+			numberOfAlgorithmRuns=numberOfAlgorithmRuns+25;
+		}
+		
 		Action bestAction = new Action(1, 0, 0);
 		if(sprime.getInt(0) == 3 || sprime.getInt(0) == 7){
 			bestAction.setInt(0, 4);
@@ -193,6 +201,10 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 //			bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
 		}				
 		lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
+		
+		
+	
+
 		
 		return bestAction; // return chosen action
 	}
