@@ -25,6 +25,9 @@ import utils.*;
 
 public class ConfidenceIntervalAlgorithm implements AgentInterface {
 
+	
+	private double totalReward = 0;
+	
 	private int obsRangeMin;
 	private static int obsRangeMax;
 	private int actRangeMin;
@@ -172,6 +175,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 
 	public Action agent_step(double r, Observation o) {
 		step++;
+		totalReward+=r;
 		State sprime = new State(o);
 //		observedStates.add(new State(o));
 //		observedRewards.put(lastStateAction, r);
@@ -180,45 +184,13 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 //				sprime));
 		
 		model.addObservation(lastStateAction.getState(), lastStateAction.getAction(), sprime, r);
-		
-		if(step % 900 == 0){
-//			doAwesomeStuff();
-		}
-
-//		Action bestAction = new Action(1, 0, 0);
-//		boolean flags[] = {false, false, false, false, false};
-//
-//		double bestValue = Double.MIN_VALUE;
-//		for (StateAction sa : qUppers.keySet()) {
-//			if (sa.getState() == sprime) {
-//				double value = qUppers.get(sa);
-//				flags[sa.getAction().intArray[0]] = true;
-//				if (value > bestValue) {
-//					bestAction = sa.getAction();
-//					bestValue = value;
-//				}
-//			}
-//		}
-//		
-//		
-//		for (int i = 0; i <= actRangeMax; i++) {
-//			if (!flags[i]) {
-//				bestAction.intArray[0] = i;
-//			}
-//		}
-//
-//		lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
-//		
-//		System.out.println(bestAction.intArray[0]);
 		Action bestAction = new Action(1, 0, 0);
 		if(sprime.getInt(0) == 3 || sprime.getInt(0) == 7){
 			bestAction.setInt(0, 4);
 		} else {
-			bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
-		}
-//		bestAction.setInt(0, (int)(Math.random() * (actRangeMax+1)));
-//		System.out.println("Action: "+bestAction.getInt(0));
-				
+			bestAction = computeMaxAction(sprime);
+//			bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
+		}				
 		lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
 		
 		return bestAction; // return chosen action
@@ -369,6 +341,28 @@ public void doAwesomeStuff() {
 		return biggest;
 	}
 
+	private Action computeMaxAction(State obs){
+		double biggest = Double.NEGATIVE_INFINITY;
+		Action chosedAction=null;
+		for(int a = actRangeMin; a <= actRangeMax;a++){
+		
+			Action action = new Action(1,0);
+			action.setInt(0,a);
+			StateAction sa = new StateAction(obs, new ActionStep(action));
+			Double lookUp = qUppers.get(sa);
+			if(lookUp == null){
+				lookUp=vMax;
+			}
+			if(lookUp > biggest){
+				biggest = lookUp;
+				chosedAction = action;
+			}
+		}
+		
+		
+		return chosedAction;
+	}
+	
 	private void computePTildes(StateAction sa,
 			boolean upper) {
 		
@@ -548,6 +542,10 @@ public void doAwesomeStuff() {
 		}
 	}
 	
+	public void printReward(){
+		System.out.println("Total Reward: " + totalReward);
+	}
+	
 	private class StateComparator implements Comparator<State> {
 
 		@Override
@@ -570,5 +568,6 @@ public void doAwesomeStuff() {
 		}
 		
 	}
+	
 	
 }
