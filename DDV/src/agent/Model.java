@@ -85,6 +85,9 @@ public class Model {
 	public double pTilde(StateActionState sas) {
 		Double d = pTilde.get(sas);
 		double d2 = d == null ? 0 : d;
+		if(d2 < 0.0000001){
+			d2=0;
+		}
 		return d2;
 	}
 
@@ -184,7 +187,7 @@ public class Model {
 		debug++;*/
 	}
 	
-/*	public void printPtilde(){
+	public void printPtilde(){
 		//if(debug%10000 == 0){
 			System.out.println("Ptilde: ");
 			for(Entry<StateActionState,Double> e : pTilde.entrySet()){
@@ -200,7 +203,7 @@ public class Model {
 		//debug++;
 	}
 	
-*/
+
 	public void createSetOfSprimes(StateAction sa) {
 		sPrimes = new LinkedList<State>();
 		for (StateActionState sas : pRoof.keySet()) {
@@ -210,4 +213,8 @@ public class Model {
 		}
 	}
 
+	public void removeSprime(State min){
+		sPrimes.remove(min);
+	}
+	
 }

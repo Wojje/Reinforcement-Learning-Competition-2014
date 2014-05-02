@@ -227,11 +227,11 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 public void doAwesomeStuff() {
 	for(StateAction sa : model.getObservedTransKeys()){
 		updateQ(sa, true);
-		updateQ(sa, false);
+		//updateQ(sa, false);
 		updateQUpper();
-		updateQLower();
+		//updateQLower();
 		updateVUpper();
-		updateVLower();
+		//updateVLower();
 	}
 //	System.out.println(model.getObservedStates().size());
 }
@@ -336,11 +336,18 @@ public void doAwesomeStuff() {
 				continue;
 			}
 			else{
+	//			model.printPtilde();
+		//		System.out.println("Till summan adderas ptilde: " + model.pTilde(obsobs));
+			//	System.out.println("multipliceras med b‰sta action fˆr ett n‰stkommande state: " + computeActionMaxQ(obs));
 				sum+= model.pTilde(obsobs)*computeActionMaxQ(obs);
 			}
 		}
-		if(upper)
+		if(upper){
+			double temp = model.reward(sa) + gamma * sum;
+		//	System.out.println("Detta v‰rde gÂr in i Q-listan " + temp);
 			qUppers.put(sa, model.reward(sa) + gamma * sum);
+		}
+		
 	}
 	
 	private double computeActionMaxQ(State obs){
@@ -367,7 +374,7 @@ public void doAwesomeStuff() {
 		
 		model.initPRoofPTilde(sa);
 //		System.out.println("-------NEW ciMOute P TILDE----------");
-	//	model.printPtilde();
+//		model.printPtilde();
 		
 		double deltaOmega = model.omega(sa)/2.0;
 		double zeta;
@@ -377,10 +384,10 @@ public void doAwesomeStuff() {
 		
 		double temp1;
 		double temp2;
-		
+		int debug =0 ; 		
 		//		System.out.println(model.getObservedStates());
 		while (deltaOmega > 0) {
-			
+
 //			for(StateAction saDerp : model.getObservedTransKeys()){
 //				for(State sprime : model.getObservedStates()){
 //					StateActionState sas = new StateActionState(saDerp, sprime);
@@ -398,7 +405,9 @@ public void doAwesomeStuff() {
 				System.out.println("Oj, min var null!");
 				return;
 			}
+			model.removeSprime(min);
 			StateActionState sasFloor = new StateActionState(sa, min);
+
 			State max = argmax(sa, upper);
 			if(max == null){
 				System.out.println("Oj, max var null!");
@@ -410,36 +419,33 @@ public void doAwesomeStuff() {
 				
 				return;
 			}
-			//			if(max == null){
-//				return;
-//			}
 			StateActionState sasRoof = new StateActionState(sa, max);
-			
-//			if(sasFloor.equals(sasRoof)){
-//				System.out.println("we are the same!");
-//			}
 			
 			
 			temp1 = model.pTilde(sasRoof);			
 			temp2 = model.pTilde(sasFloor);
-//			System.out.println("pTildes f√∂r sasRoof: "+temp1 + " sasfloor: " + temp2);
-			
 			sasRoofValue = temp1;
 			sasFloorValue = temp2;
-//			System.out.println("sasRoofValue: "+sasRoofValue + " sasFloorValue: "+sasFloorValue + " deltaOmega "+deltaOmega);
 			zeta = Math.min(Math.min(1-temp1, sasFloorValue), deltaOmega);
 			
-	//		System.out.println("ZETA: " + zeta);
-			
+
 			
 			model.updatePTilde(sasFloor, sasFloorValue - zeta);
-			model.updatePTilde(sasRoof, sasRoofValue + zeta);
+			model.updatePTilde(sasRoof, model.pTilde(sasRoof) + zeta);
 //			System.out.println("DeltaOmega: "+deltaOmega + " Zeta: "+zeta);
 			deltaOmega = deltaOmega - zeta;
+			
+			debug ++;
+			
+			if(debug%100000 == 0){
+				System.out.println("J‰klar vad det snurrar ZETA: " + zeta);
+				System.out.println("Omega: " + deltaOmega);
+
+			}
 //			System.out.println("New DeltaOmega "+deltaOmega);
 //			System.out.println(deltaOmega);
 		//	model.printPtilde();
-
+			//System.out.println("");
 			
 		}
 	//	System.out.println("TERMINATED PTILDE");
