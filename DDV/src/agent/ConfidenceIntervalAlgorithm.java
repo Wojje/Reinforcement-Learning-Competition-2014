@@ -197,43 +197,13 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	}
 
 public void doAwesomeStuff() {
-	for(StateAction sa : model.getObservedTransKeys()){
-		updateQ(sa, true);
+		updateQ(lastStateAction, true);
 		//updateQ(sa, false);
 		updateQUpper();
 		//updateQLower();
 		updateVUpper();
 		//updateVLower();
-	}
-//	System.out.println(model.getObservedStates().size());
 }
-
-//	private static void updateObservedStateTrans(StateAction lastStateAction,
-//			State sprime) {
-//		Set<State> sass = observedStateTrans.get(lastStateAction);
-//		if (sass == null) {
-//			sass = new HashSet<State>();
-//			observedStateTrans.put(lastStateAction, sass);
-//		}
-//		sass.add(sprime);
-//	}
-
-//	private void updateStateActionCounter(StateAction sa) {
-//		if (stateActionCounter.containsKey(sa)) {
-//			stateActionCounter.put(sa, stateActionCounter.get(sa) + 1);
-//		} else {
-//			stateActionCounter.put(sa, 1);
-//		}
-//	}
-
-//	private void updateStateActionStateCounter(StateActionState sas) {
-//		if (stateActionStateCounter.containsKey(sas)) {
-//			stateActionStateCounter.put(sas,
-//					stateActionStateCounter.get(sas) + 1);
-//		} else {
-//			stateActionStateCounter.put(sas, 1);
-//		}
-//	}
 
 	public void updateQUpper() {
 		iterateQ(true);
@@ -375,9 +345,6 @@ public void doAwesomeStuff() {
 		double sasFloorValue;
 		double sasRoofValue;
 
-		
-		double temp1;
-		double temp2;
 		int debug =0 ; 		
 		//		System.out.println(model.getObservedStates());
 		while (deltaOmega > 0) {
@@ -416,11 +383,9 @@ public void doAwesomeStuff() {
 			StateActionState sasRoof = new StateActionState(sa, max);
 			
 			
-			temp1 = model.pTilde(sasRoof);			
-			temp2 = model.pTilde(sasFloor);
-			sasRoofValue = temp1;
-			sasFloorValue = temp2;
-			zeta = Math.min(Math.min(1-temp1, sasFloorValue), deltaOmega);
+			sasRoofValue = model.pTilde(sasRoof);
+			sasFloorValue = model.pTilde(sasFloor);
+			zeta = Math.min(Math.min(1-sasRoofValue, sasFloorValue), deltaOmega);
 			
 
 			
