@@ -20,6 +20,7 @@ public class GridWorldExperiment {
 	private int steps;
 	private static final int sampleLength = 10000;
 	private static final int startSample = 50;
+	private final boolean optimistic = false;
 	public GridWorldExperiment(MDP mdp, int nbrOfSteps){
 		this.mdp = mdp;
 		this.steps = nbrOfSteps;
@@ -32,7 +33,7 @@ public class GridWorldExperiment {
 		int minAct = 0;
 		this.maxAct = mdp.getActions().size()-1;
 		double maxRew = 1.0;
-		ConfidenceIntervalAlgorithm cia = new ConfidenceIntervalAlgorithm(minState, maxState, minAct, maxAct, maxRew);
+		ConfidenceIntervalAlgorithm cia = new ConfidenceIntervalAlgorithm(minState, maxState, minAct, maxAct, maxRew, optimistic);
 		
 		State start = mdp.getStartingState();
 		State s = null;

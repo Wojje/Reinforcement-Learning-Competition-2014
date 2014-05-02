@@ -27,6 +27,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 
 	
 	private double totalReward = 0;
+	boolean optimistic;
 	
 	private int obsRangeMin;
 	private static int obsRangeMax;
@@ -70,13 +71,13 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 //		
 //	}
 	
-	public ConfidenceIntervalAlgorithm(int minState, int maxState, int minAct, int maxAct, double maxRew){
+	public ConfidenceIntervalAlgorithm(int minState, int maxState, int minAct, int maxAct, double maxRew, boolean optimistic){
 		actRangeMax = maxAct;
 		actRangeMin = minAct;
 		obsRangeMax = maxState;
 		obsRangeMin = minState;
 		this.maxRew = maxRew;
-		
+		this.optimistic=optimistic;
 		model = new Model(maxState, conf);
 		
 //		minRew = theRewardRange.getMin();
@@ -188,7 +189,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		if(sprime.getInt(0) == 3 || sprime.getInt(0) == 7){
 			bestAction.setInt(0, 4);
 		} else {
-			bestAction = computeMaxAction(sprime);
+			bestAction = computeMaxAction(sprime, optimistic);
 //			bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
 		}				
 		lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
@@ -196,14 +197,17 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		return bestAction; // return chosen action
 	}
 
-public void doAwesomeStuff() {
-		updateQ(lastStateAction, true);
-		//updateQ(sa, false);
-		updateQUpper();
-		//updateQLower();
-		updateVUpper();
-		//updateVLower();
-}
+	public void doAwesomeStuff() {
+		updateQ(lastStateAction, optimistic);
+		if(optimistic){
+			updateQUpper();
+			updateVUpper();
+		}
+		else{
+			updateQLower();
+			updateVLower();
+		}
+	}
 
 	public void updateQUpper() {
 		iterateQ(true);
@@ -278,24 +282,29 @@ public void doAwesomeStuff() {
 				continue;
 			}
 			else{
-				sum+= model.pTilde(obsobs)*computeActionMaxQ(obs);
+				sum+= model.pTilde(obsobs)*computeActionMaxQ(obs, upper);
 			}
 		}
 		if(upper){
-			double temp = model.reward(sa) + gamma * sum;
-		//	System.out.println("Detta värde går in i Q-listan " + temp);
 			qUppers.put(sa, model.reward(sa) + gamma * sum);
+		}
+		else{
+			qLowers.put(sa, model.reward(sa) + gamma * sum);
 		}
 		
 	}
 	
-	private double computeActionMaxQ(State obs){
+	private double computeActionMaxQ(State obs, boolean upper){
 		double biggest = Double.NEGATIVE_INFINITY;
 		for(int a = actRangeMin; a <= actRangeMax;a++){
 			Action action = new Action(1,0);
 			action.setInt(0,a);
 			StateAction sa = new StateAction(obs, new ActionStep(action));
-			Double lookUp = qUppers.get(sa);
+			Double lookUp;
+			if(upper)
+				lookUp = qUppers.get(sa);
+			else
+				lookUp = qLowers.get(sa);				
 			if(lookUp == null){
 				lookUp=vMax;
 			}
@@ -308,7 +317,7 @@ public void doAwesomeStuff() {
 		return biggest;
 	}
 
-	private Action computeMaxAction(State obs){
+	private Action computeMaxAction(State obs, boolean upper){
 		double biggest = Double.NEGATIVE_INFINITY;
 		Action chosedAction=null;
 		for(int a = actRangeMin; a <= actRangeMax;a++){
@@ -316,7 +325,11 @@ public void doAwesomeStuff() {
 			Action action = new Action(1,0);
 			action.setInt(0,a);
 			StateAction sa = new StateAction(obs, new ActionStep(action));
-			Double lookUp = qUppers.get(sa);
+			Double lookUp;
+			if(upper)
+				lookUp = qUppers.get(sa);
+			else
+				lookUp = qLowers.get(sa);
 			if(lookUp == null){
 				lookUp=vMax;
 			}
@@ -385,9 +398,7 @@ public void doAwesomeStuff() {
 		State min = null;
 		Double tmpValue;
 
-//		int i = 0;
 		for(State s : model.getObservedStates()){
-//			i++;
 			StateActionState sas = new StateActionState(sa, s);
 			if (model.pTilde(sas) > 0) {
 				if (upper) {
@@ -408,12 +419,6 @@ public void doAwesomeStuff() {
 				}
 			}
 		}
-//		checkedAllStates = i == model.getNbrOfStates() || value != 0.0; //In case of not all states checked.
-//		createUnknownState = i < model.getNbrOfStates() && value != 0.0;
-//		if(createUnknownState){
-//			min = new State(new Observation(1, 0));
-//			min.setInt(0, -4); // Unique unknown state
-//		}
 		return min;
 	}
 
@@ -445,11 +450,6 @@ public void doAwesomeStuff() {
 				}
 			}
 		}
-//		createUnknownState = i != model.getNbrOfStates() && value != vMax; //In case of not all states checked.
-//		if(createUnknownState){
-//			max = new State(new Observation(1, 0));
-//			max.setInt(0, -5); // Unique unknown state
-//		}
 		return max;
 	}
 

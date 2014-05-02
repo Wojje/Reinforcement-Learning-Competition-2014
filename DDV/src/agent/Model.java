@@ -124,6 +124,9 @@ public class Model {
 	public double omega(StateAction sa) {
 //		return Math.sqrt((2 * Math.log(Math.pow(2, nbrOfStates) - 2) - Math
 //				.log(conf)) / NSA.get(sa));
+		if(NSA.get(sa)==null){
+			System.out.println("bajskorv");
+		}
 		return Math.sqrt((2 * Math.log(Math.pow(2, observedStates.size()+1) - 2) - Math
 				.log(conf)) / NSA.get(sa));
 	}
