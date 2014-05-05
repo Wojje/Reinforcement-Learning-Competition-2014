@@ -37,7 +37,7 @@ public class GridWorldMDP implements MDP {
 	private GWorldStates[][] world;
 	private double reward = 1.0;
 	private double deathRew = -1.0;
-	private double succesMoveProb = 0.8;
+	private double succesMoveProb = 1.0;
 	private double livingReward = 0.0;
 	
 	public GridWorldMDP(double reward, double deathRew, double livingRew, double successMove){

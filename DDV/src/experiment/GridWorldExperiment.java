@@ -17,7 +17,7 @@ public class GridWorldExperiment {
 	private static final int sampleLength = 10000;
 
 	private int steps;
-	private final boolean optimistic = true;
+	private final boolean optimistic = false;
 	public GridWorldExperiment(MDP mdp, int nbrOfSteps){
 		this.mdp = mdp;
 		this.steps = nbrOfSteps;

@@ -496,7 +496,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	
 	
 	public void computePolicy(){
-		LinkedList<State> keys = new LinkedList<>(model.getObservedStates());
+		LinkedList<State> keys = new LinkedList<State>(model.getObservedStates());
 		 
 		Collections.sort(keys, new StateComparator());
 		Action a;
@@ -515,7 +515,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		if(policy == null){
 			computePolicy();
 		}
-		LinkedList<State> keys = new LinkedList<>(model.getObservedStates());
+		LinkedList<State> keys = new LinkedList<State>(model.getObservedStates());
 		 
 		Collections.sort(keys, new StateComparator());
 		for(State s : keys){
