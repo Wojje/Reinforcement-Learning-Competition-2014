@@ -21,6 +21,8 @@ import org.rlcommunity.rlglue.codec.types.Observation;
 import org.rlcommunity.rlglue.codec.types.RL_abstract_type;
 import org.rlcommunity.rlglue.codec.util.AgentLoader;
 
+import environment.SysOpCpu;
+
 import utils.*;
 
 public class ConfidenceIntervalAlgorithm implements AgentInterface {
@@ -28,7 +30,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	private static int numberOfAlgorithmRuns = startSample;
 
 	private double totalReward = 0;
-	boolean optimistic;
+	boolean optimistic=true;
 	
 	private int obsRangeMin;
 	private static int obsRangeMax;
@@ -70,9 +72,12 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	
 	private Map<State, Action> policy = null;
 	
-//	public ConfidenceIntervalAlgorithm(){
-//		
-//	}
+	public ConfidenceIntervalAlgorithm(){
+		qUppers = new HashMap<StateAction, Double>();
+		qLowers = new HashMap<StateAction, Double>();
+		vUppers = new HashMap<State, Double>();
+		vLowers = new HashMap<State, Double>();
+	}
 	
 	public ConfidenceIntervalAlgorithm(int minState, int maxState, int minAct, int maxAct, double maxRew, boolean optimistic){
 		actRangeMax = maxAct;
@@ -99,10 +104,10 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		vLowers = new HashMap<State, Double>();
 	}
 	
-//	public static void main(String[] args){
-//     	AgentLoader theLoader=new AgentLoader(new ConfidenceIntervalAlgorithm());
-//        theLoader.run();
-//	}
+	public static void main(String[] args){
+     	AgentLoader theLoader=new AgentLoader(new ConfidenceIntervalAlgorithm());
+        theLoader.run();
+	}
 
 	public void agent_cleanup() {
 		lastStateAction = null;
@@ -141,11 +146,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 
 		vMax = maxRew / (1 - gamma);
 
-//		observedRewards = new HashMap<StateAction, Double>();
 		observedStateTrans = new HashMap<StateAction, Set<State>>();
-//		observedStates = new LinkedList<State>();
-//		stateActionCounter = new HashMap<StateAction, Integer>();
-//		stateActionStateCounter = new HashMap<StateActionState, Integer>();
 
 
 
@@ -164,16 +165,12 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	public Action agent_start(Observation o) {
 		Observation newObservation = o.duplicate();
 		stateZero = new State(newObservation);
-//		observedStates.add(stateZero);
 		model.addStartState(newObservation);
 		
-		int theIntAction = randGenerator.nextInt(actRangeMax+1);
 		Action bestAction = new Action(1, 0, 0);
 		bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
 		
 		lastStateAction = new StateAction(stateZero, new ActionStep(bestAction));
-//		updateStateActionCounter(lastStateAction);
-//		System.out.println(bestAction.intArray[0]);
 		return bestAction;
 	}
 
@@ -181,11 +178,6 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		step++;
 		totalReward+=r;
 		State sprime = new State(o);
-//		observedStates.add(new State(o));
-//		observedRewards.put(lastStateAction, r);
-//		updateObservedStateTrans(lastStateAction, sprime);
-//		updateStateActionStateCounter(new StateActionState(lastStateAction,
-//				sprime));
 		
 		model.addObservation(lastStateAction.getState(), lastStateAction.getAction(), sprime, r);
 		
@@ -200,14 +192,11 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 			bestAction.setInt(0, 4);
 		} else {
 			bestAction = computeMaxAction(sprime, optimistic);
-//			bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
 		}				
 		lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
-		
-		
-	
-
-		
+		/*
+		 * Här ska det finnas 14 ints (alltså antalet reach)
+		 */
 		return bestAction; // return chosen action
 	}
 

@@ -100,10 +100,6 @@ public class GridWorldExperiment {
 		
 		return s;
 	}
-
-	private int nextAction(){
-		return (int) (Math.random() * maxAct);
-	}
 	
 	private class StateProb implements Comparable<StateProb>{
 		private State s;
