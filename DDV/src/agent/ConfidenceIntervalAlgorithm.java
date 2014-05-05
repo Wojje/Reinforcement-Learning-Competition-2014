@@ -27,8 +27,13 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	private static final int startSample = 50;
 	private static int numberOfAlgorithmRuns = startSample;
 
+	public static final int NBR_REACHES = 2;
+    public static final int HABITATS_PER_REACHES = 2;
+	
+    private int actionDims;
+    
 	private double totalReward = 0;
-	boolean optimistic;
+	boolean optimistic = true;
 	
 	private int obsRangeMin;
 	private static int obsRangeMax;
@@ -71,36 +76,36 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 //	public ConfidenceIntervalAlgorithm(){
 //		
 //	}
-	
-	public ConfidenceIntervalAlgorithm(int minState, int maxState, int minAct, int maxAct, double maxRew, boolean optimistic){
-		actRangeMax = maxAct;
-		actRangeMin = minAct;
-		obsRangeMax = maxState;
-		obsRangeMin = minState;
-		this.maxRew = maxRew;
-		this.optimistic=optimistic;
-		model = new Model(maxState, conf);
-		
-//		minRew = theRewardRange.getMin();
-
-		vMax = maxRew / (1 - gamma);
-
-//		observedRewards = new HashMap<StateAction, Double>();
-		observedStateTrans = new HashMap<StateAction, Set<State>>();
-//		observedStates = new LinkedList<State>();
-
-//		stateActionCounter = new HashMap<StateAction, Integer>();
-//		stateActionStateCounter = new HashMap<StateActionState, Integer>();
-		qUppers = new HashMap<StateAction, Double>();
-		qLowers = new HashMap<StateAction, Double>();
-		vUppers = new HashMap<State, Double>();
-		vLowers = new HashMap<State, Double>();
-	}
-	
-//	public static void main(String[] args){
-//     	AgentLoader theLoader=new AgentLoader(new ConfidenceIntervalAlgorithm());
-//        theLoader.run();
+//	
+//	public ConfidenceIntervalAlgorithm(int minState, int maxState, int minAct, int maxAct, double maxRew, boolean optimistic){
+//		actRangeMax = maxAct;
+//		actRangeMin = minAct;
+//		obsRangeMax = maxState;
+//		obsRangeMin = minState;
+//		this.maxRew = maxRew;
+//		this.optimistic=optimistic;
+//		model = new Model(maxState, conf);
+//		
+////		minRew = theRewardRange.getMin();
+//
+//		vMax = maxRew / (1 - gamma);
+//
+////		observedRewards = new HashMap<StateAction, Double>();
+//		observedStateTrans = new HashMap<StateAction, Set<State>>();
+////		observedStates = new LinkedList<State>();
+//
+////		stateActionCounter = new HashMap<StateAction, Integer>();
+////		stateActionStateCounter = new HashMap<StateActionState, Integer>();
+//		qUppers = new HashMap<StateAction, Double>();
+//		qLowers = new HashMap<StateAction, Double>();
+//		vUppers = new HashMap<State, Double>();
+//		vLowers = new HashMap<State, Double>();
 //	}
+	
+	public static void main(String[] args){
+     	AgentLoader theLoader=new AgentLoader(new ConfidenceIntervalAlgorithm());
+        theLoader.run();
+	}
 
 	public void agent_cleanup() {
 		lastStateAction = null;
@@ -129,6 +134,8 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 				+ " to " + theRewardRange.getMax());
 
 		model = new Model(obsRangeMax, conf);
+		
+		actionDims = theTaskSpec.getNumDiscreteActionDims();
 		
 		actRangeMax = theActRange.getMax();
 		actRangeMin = theActRange.getMin();
@@ -160,22 +167,28 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	}
 
 	public Action agent_start(Observation o) {
-		Observation newObservation = o.duplicate();
-		stateZero = new State(newObservation);
+//		Observation newObservation = o.duplicate();
+		stateZero = new State(o);
 //		observedStates.add(stateZero);
-		model.addStartState(newObservation);
+		model.addStartState(o);
 		
-		int theIntAction = randGenerator.nextInt(actRangeMax+1);
-		Action bestAction = new Action(1, 0, 0);
-		bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
+		Action bestAction = new Action(actionDims, 0, 0);
+//		bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
+		for(int i = 0; i < actionDims; i++) {
+			bestAction.setInt(i, 1);
+		}
 		
 		lastStateAction = new StateAction(stateZero, new ActionStep(bestAction));
 //		updateStateActionCounter(lastStateAction);
-//		System.out.println(bestAction.intArray[0]);
+//		System.out.println(bestAction.intArray);
+
 		return bestAction;
 	}
+	
+//	Random random = new Random();
 
 	public Action agent_step(double r, Observation o) {
+		r=r+11.6*NBR_REACHES + 0.9*NBR_REACHES*HABITATS_PER_REACHES;
 		step++;
 		totalReward+=r;
 		State sprime = new State(o);
@@ -187,24 +200,29 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		
 		model.addObservation(lastStateAction.getState(), lastStateAction.getAction(), sprime, r);
 		
-		if(step == numberOfAlgorithmRuns){
-			System.out.println("Antal samples: " + step);
+//		if(step == numberOfAlgorithmRuns){
+//			System.out.println("Antal samples: " + step);
 			doAwesomeStuff();
-			numberOfAlgorithmRuns=numberOfAlgorithmRuns+25;
-		}
+//			numberOfAlgorithmRuns=numberOfAlgorithmRuns+25;
+//		}
 		
-		Action bestAction = new Action(1, 0, 0);
-		if(sprime.getInt(0) == 3 || sprime.getInt(0) == 7){
-			bestAction.setInt(0, 4);
-		} else {
-			bestAction = computeMaxAction(sprime, optimistic);
+		Action bestAction = new Action(actionDims, 0, 0);
+//		if(sprime.getInt(0) == 3 || sprime.getInt(0) == 7){
+//			bestAction.setInt(0, 4);
+//		} else {
+			bestAction = computeMaxAction(sprime, !optimistic);
 //			bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
-		}				
+//		}				
 		lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
 		
 		
-	
+//		System.out.println(bestAction.intArray);
 
+//		List<Integer> l = Utilities.getActions(o.intArray, NBR_REACHES, HABITATS_PER_REACHES).get(random.nextInt(
+//				Utilities.getActions(o.intArray, NBR_REACHES, HABITATS_PER_REACHES).size()));
+//		for(int i = 0; i < actionDims; i++) {
+//			bestAction.setInt(i, l.get(i));
+//		}
 		
 		return bestAction; // return chosen action
 	}
@@ -308,15 +326,18 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	
 	private double computeActionMaxQ(State obs, boolean upper){
 		double biggest = Double.NEGATIVE_INFINITY;
-		for(int a = actRangeMin; a <= actRangeMax;a++){
-			Action action = new Action(1,0);
-			action.setInt(0,a);
+//		for(int a = actRangeMin; a <= actRangeMax;a++){
+		for(List<Integer> a: Utilities.getActions(obs.intArray, NBR_REACHES, HABITATS_PER_REACHES)){
+			Action action = new Action(NBR_REACHES,0);
+			for(int i = 0; i < a.size(); i++) {
+				action.setInt(i,a.get(i));
+			}
 			StateAction sa = new StateAction(obs, new ActionStep(action));
 			Double lookUp;
 			if(upper)
 				lookUp = qUppers.get(sa);
 			else
-				lookUp = qLowers.get(sa);				
+				lookUp = qLowers.get(sa);
 			if(lookUp == null){
 				lookUp=vMax;
 			}
@@ -332,10 +353,12 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	private Action computeMaxAction(State obs, boolean upper){
 		double biggest = Double.NEGATIVE_INFINITY;
 		Action chosedAction=null;
-		for(int a = actRangeMin; a <= actRangeMax;a++){
-		
-			Action action = new Action(1,0);
-			action.setInt(0,a);
+//		for(int a = actRangeMin; a <= actRangeMax;a++){
+		for(List<Integer> a: Utilities.getActions(obs.intArray, NBR_REACHES, HABITATS_PER_REACHES)){
+			Action action = new Action(NBR_REACHES,0);
+			for(int i = 0; i < a.size(); i++) {
+				action.setInt(i,a.get(i));
+			}
 			StateAction sa = new StateAction(obs, new ActionStep(action));
 			Double lookUp;
 			if(upper)
@@ -373,23 +396,23 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 
 			State min = argmin(sa, upper);
 			if(min == null){
-				System.out.println("Oj, min var null!");
+//				System.out.println("Oj, min var null!");
 				return;
 			}
 			model.removeSprime(min);
 			StateActionState sasFloor = new StateActionState(sa, min);
 
 			State max = argmax(sa, upper);
-			if(max == null){
-				System.out.println("Oj, max var null!");
-				System.out.println("S' innehöll: " + model.getSprimes().size() + " värden");
-				for(State s:model.getSprimes()){
-					System.out.print(" S: "+ s.getInt(0));
-					System.out.println();
-				}
-				
-				return;
-			}
+//			if(max == null){
+//				System.out.println("Oj, max var null!");
+//				System.out.println("S' innehöll: " + model.getSprimes().size() + " värden");
+//				for(State s:model.getSprimes()){
+//					System.out.print(" S: "+ s.getInt(0));
+//					System.out.println();
+//				}
+//				
+//				return;
+//			}
 			StateActionState sasRoof = new StateActionState(sa, max);
 			
 			
