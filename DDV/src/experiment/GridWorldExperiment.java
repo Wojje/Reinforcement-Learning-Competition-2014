@@ -3,9 +3,6 @@ package experiment;
 import java.util.Collections;
 import java.util.LinkedList;
 
-import org.rlcommunity.rlglue.codec.types.Action;
-import org.rlcommunity.rlglue.codec.types.Observation;
-
 import mdp.GridWorldMDP;
 import mdp.MDP;
 import utils.ActionStep;
@@ -20,7 +17,7 @@ public class GridWorldExperiment {
 	private static final int sampleLength = 10000;
 
 	private int steps;
-	private final boolean optimistic = false;
+	private final boolean optimistic = true;
 	public GridWorldExperiment(MDP mdp, int nbrOfSteps){
 		this.mdp = mdp;
 		this.steps = nbrOfSteps;
@@ -70,6 +67,7 @@ public class GridWorldExperiment {
 		}
 		
 		cia.printReward();
+		cia.printPolicy();
 		
 	}
 	

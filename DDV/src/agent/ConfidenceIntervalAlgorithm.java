@@ -68,6 +68,8 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 
 	private Random randGenerator = new Random();
 	
+	private Map<State, Action> policy = null;
+	
 //	public ConfidenceIntervalAlgorithm(){
 //		
 //	}
@@ -382,7 +384,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 			State max = argmax(sa, upper);
 			if(max == null){
 				System.out.println("Oj, max var null!");
-				System.out.println("S' innehöll: " + model.getSprimes().size() + " värden");
+				System.out.println("S' innehï¿½ll: " + model.getSprimes().size() + " vï¿½rden");
 				for(State s:model.getSprimes()){
 					System.out.print(" S: "+ s.getInt(0));
 					System.out.println();
@@ -490,6 +492,38 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	
 	public void printReward(){
 		System.out.println("Total Reward: " + totalReward);
+	}
+	
+	
+	public void computePolicy(){
+		LinkedList<State> keys = new LinkedList<>(model.getObservedStates());
+		 
+		Collections.sort(keys, new StateComparator());
+		Action a;
+		Map<State, Action> policy = new HashMap<State, Action>();
+		for(State s : keys){
+			a = computeMaxAction(s, optimistic);
+			policy.put(s, a);
+		}
+		this.policy = policy;
+		
+	}
+	
+	public void printPolicy(){
+		//Hard coded for gridworld atm
+		String str;
+		if(policy == null){
+			computePolicy();
+		}
+		LinkedList<State> keys = new LinkedList<>(model.getObservedStates());
+		 
+		Collections.sort(keys, new StateComparator());
+		for(State s : keys){
+			str = "S: "+s.getInt(0);
+			str += " A: "+policy.get(s).getInt(0);
+			System.out.println(str);
+		}
+		
 	}
 	
 	private class StateComparator implements Comparator<State> {

@@ -35,10 +35,10 @@ public class GridWorldMDP implements MDP {
 	
 	//private List<State> states;
 	private GWorldStates[][] world;
-	private double reward;
-	private double deathRew;
-	private double succesMoveProb;
-	private double livingReward;
+	private double reward = 1.0;
+	private double deathRew = -1.0;
+	private double succesMoveProb = 0.8;
+	private double livingReward = 0.0;
 	
 	public GridWorldMDP(double reward, double deathRew, double livingRew, double successMove){
 		this.reward = reward;
@@ -49,7 +49,7 @@ public class GridWorldMDP implements MDP {
 	}
 	
 	public GridWorldMDP(){
-		this(1, -1, -0.01, 0.8);
+		createStates();
 	}
 	
 	
