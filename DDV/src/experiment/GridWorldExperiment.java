@@ -3,9 +3,6 @@ package experiment;
 import java.util.Collections;
 import java.util.LinkedList;
 
-import org.rlcommunity.rlglue.codec.types.Action;
-import org.rlcommunity.rlglue.codec.types.Observation;
-
 import mdp.GridWorldMDP;
 import mdp.MDP;
 import utils.ActionStep;
@@ -70,6 +67,7 @@ public class GridWorldExperiment {
 		}
 		
 		cia.printReward();
+		cia.printPolicy();
 		
 	}
 	

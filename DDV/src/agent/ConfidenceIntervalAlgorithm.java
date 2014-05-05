@@ -73,6 +73,8 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 
 	private Random randGenerator = new Random();
 	
+	private Map<State, Action> policy = null;
+	
 //	public ConfidenceIntervalAlgorithm(){
 //		
 //	}
@@ -513,6 +515,38 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	
 	public void printReward(){
 		System.out.println("Total Reward: " + totalReward);
+	}
+	
+	
+	public void computePolicy(){
+		LinkedList<State> keys = new LinkedList<State>(model.getObservedStates());
+		 
+		Collections.sort(keys, new StateComparator());
+		Action a;
+		Map<State, Action> policy = new HashMap<State, Action>();
+		for(State s : keys){
+			a = computeMaxAction(s, optimistic);
+			policy.put(s, a);
+		}
+		this.policy = policy;
+		
+	}
+	
+	public void printPolicy(){
+		//Hard coded for gridworld atm
+		String str;
+		if(policy == null){
+			computePolicy();
+		}
+		LinkedList<State> keys = new LinkedList<State>(model.getObservedStates());
+		 
+		Collections.sort(keys, new StateComparator());
+		for(State s : keys){
+			str = "S: "+s.getInt(0);
+			str += " A: "+policy.get(s).getInt(0);
+			System.out.println(str);
+		}
+		
 	}
 	
 	private class StateComparator implements Comparator<State> {

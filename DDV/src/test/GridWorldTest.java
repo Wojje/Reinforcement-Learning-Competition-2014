@@ -248,6 +248,8 @@ public class GridWorldTest {
 		//9 to 4 by action 4 (EXIT)
 		testProbCase(states.get(9), as.get(1), states.get(4), 0.0);
 		
+		testProbCase(states.get(7), as.get(0), states.get(3), 0.0);
+		
 		
 	}
 	
