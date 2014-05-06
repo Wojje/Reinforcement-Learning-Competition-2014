@@ -24,9 +24,12 @@ import utils.StateActionState;
 import utils.Utilities;
 
 public class ConfidenceIntervalAlgorithm implements AgentInterface {
-	private static final int startSample = 50;
+	private static final int startSample = 50; // IT'S A MAGIC IN ME!!!
 	private static int numberOfAlgorithmRuns = startSample;
 
+	private static double magicPostivConstant; // borde varit final
+	
+	
 	public static int NBR_REACHES;
     public static int HABITATS_PER_REACHES;
 	
@@ -46,7 +49,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 
 	private static StateAction lastStateAction;
 
-	private double accuracy = 0.1; // Proper value?
+	//private double accuracy = 0.1; // Proper value?
 	private static double conf = 0.05; // Woot?
 
 	private static double gamma = 0.9; // Decay of rewards
@@ -105,19 +108,23 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		DoubleRange theRewardRange = theTaskSpec.getRewardRange();
 		System.out.println("Reward range is: " + theRewardRange.getMin()
 				+ " to " + theRewardRange.getMax());
-
-		model = new Model(obsRangeMax, conf);
+/*
+ * Ändrade ifrån obsRangeMax till observationsDimension
+ */
+		model = new Model((int) Math.pow(3, theTaskSpec.getNumDiscreteObsDims()), conf);
 		
 		actionDims = theTaskSpec.getNumDiscreteActionDims(); //reach
 		NBR_REACHES = actionDims;  // reach
 		HABITATS_PER_REACHES = theTaskSpec.getNumDiscreteObsDims()/NBR_REACHES;
 
+		magicPostivConstant = 11.6*NBR_REACHES + 0.9*NBR_REACHES*HABITATS_PER_REACHES;
+		
 		System.out.println(NBR_REACHES + "---" + HABITATS_PER_REACHES);
 		actRangeMax = theActRange.getMax();
 		actRangeMin = theActRange.getMin();
 		obsRangeMax = theObsRange.getMax();
 		obsRangeMin = theObsRange.getMin();
-		maxRew = theRewardRange.getMax();
+		maxRew = theRewardRange.getMax() + magicPostivConstant;
 //		minRew = theRewardRange.getMin();
 
 		vMax = maxRew / (1 - gamma);
@@ -157,7 +164,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	
 
 	public Action agent_step(double r, Observation o) {
-		r=r+11.6*NBR_REACHES + 0.9*NBR_REACHES*HABITATS_PER_REACHES;
+		r=r+magicPostivConstant;
 		step++;
 		totalReward+=r;
 		State sprime = new State(o);
@@ -169,19 +176,30 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		
 		model.addObservation(lastStateAction.getState(), lastStateAction.getAction(), sprime, r);
 		
-//		if(step == numberOfAlgorithmRuns){
-//			System.out.println("Antal samples: " + step);
-			doAwesomeStuff();
-//			numberOfAlgorithmRuns=numberOfAlgorithmRuns+25;
-//		}
-		
 		Action bestAction = new Action(actionDims, 0, 0);
-//		if(sprime.getInt(0) == 3 || sprime.getInt(0) == 7){
-//			bestAction.setInt(0, 4);
-//		} else {
-			bestAction = computeMaxAction(sprime, !optimistic);
-//			bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
-//		}				
+		
+		/*
+		 * Ta inte bort, allt blir kass då!
+		 */
+
+		if(step == numberOfAlgorithmRuns){
+			System.out.println("Antal samples: " + step);
+			doAwesomeStuff();
+			numberOfAlgorithmRuns=numberOfAlgorithmRuns+25;
+		}
+		
+		
+		if(step<startSample){
+			List<List<Integer>> possibleActions =  Utilities.getActions(sprime.intArray, NBR_REACHES, HABITATS_PER_REACHES);
+			List<Integer> randomAction = possibleActions.get((int)(Math.random()*possibleActions.size()));
+				Action action = new Action(NBR_REACHES,0);
+				for(int i = 0; i < randomAction.size(); i++) {
+					action.setInt(i,randomAction.get(i));
+				}
+				bestAction = action;
+		}else{		
+			bestAction = computeMaxAction(sprime, optimistic);
+		}
 		lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
 		
 		
@@ -322,7 +340,6 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	private Action computeMaxAction(State obs, boolean upper){
 		double biggest = Double.NEGATIVE_INFINITY;
 		Action chosedAction=null;
-//		for(int a = actRangeMin; a <= actRangeMax;a++){
 		for(List<Integer> a: Utilities.getActions(obs.intArray, NBR_REACHES, HABITATS_PER_REACHES)){
 			Action action = new Action(NBR_REACHES,0);
 			for(int i = 0; i < a.size(); i++) {
