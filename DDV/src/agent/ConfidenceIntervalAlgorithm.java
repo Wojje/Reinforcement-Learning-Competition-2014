@@ -1,16 +1,13 @@
 package agent;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.rlcommunity.rlglue.codec.AgentInterface;
 import org.rlcommunity.rlglue.codec.taskspec.TaskSpec;
@@ -18,10 +15,13 @@ import org.rlcommunity.rlglue.codec.taskspec.ranges.DoubleRange;
 import org.rlcommunity.rlglue.codec.taskspec.ranges.IntRange;
 import org.rlcommunity.rlglue.codec.types.Action;
 import org.rlcommunity.rlglue.codec.types.Observation;
-import org.rlcommunity.rlglue.codec.types.RL_abstract_type;
 import org.rlcommunity.rlglue.codec.util.AgentLoader;
 
-import utils.*;
+import utils.ActionStep;
+import utils.State;
+import utils.StateAction;
+import utils.StateActionState;
+import utils.Utilities;
 
 public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	private static final int startSample = 50;
@@ -407,7 +407,6 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 			State max = argmax(sa, upper);
 //			if(max == null){
 //				System.out.println("Oj, max var null!");
-//				System.out.println("S' innehöll: " + model.getSprimes().size() + " värden");
 //				for(State s:model.getSprimes()){
 //					System.out.print(" S: "+ s.getInt(0));
 //					System.out.println();
