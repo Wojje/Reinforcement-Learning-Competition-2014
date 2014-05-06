@@ -168,7 +168,6 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		model.addStartState(newObservation);
 		
 		Action bestAction = new Action(1, 0, 0);
-		bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
 		
 		lastStateAction = new StateAction(stateZero, new ActionStep(bestAction));
 		return bestAction;
@@ -188,11 +187,8 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		}
 		
 		Action bestAction = new Action(1, 0, 0);
-		if(sprime.getInt(0) == 3 || sprime.getInt(0) == 7){
-			bestAction.setInt(0, 4);
-		} else {
-			bestAction = computeMaxAction(sprime, optimistic);
-		}				
+		bestAction = computeMaxAction(sprime, optimistic);
+			
 		lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
 		/*
 		 * Här ska det finnas 14 ints (alltså antalet reach)
