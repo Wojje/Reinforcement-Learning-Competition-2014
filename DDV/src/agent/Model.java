@@ -75,7 +75,7 @@ public class Model {
 		double discountedRew;
 		if(this.reward.containsKey(sa)){
 			discountedRew = d * DISCOUNT;
-			discountedRew += reward * 1-DISCOUNT;
+			discountedRew += reward * (1 - DISCOUNT);
 		} else {
 			discountedRew = reward;
 		}
