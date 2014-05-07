@@ -38,6 +38,11 @@ public class State extends Observation {
 		return true;
 	}
 	
+	public String toString(){
+		//Make cleaner
+		return Arrays.toString(this.intArray);
+	}
+	
 	
 
 }
