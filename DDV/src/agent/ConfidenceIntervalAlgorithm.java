@@ -50,7 +50,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	private static StateAction lastStateAction;
 
 	//private double accuracy = 0.1; // Proper value?
-	private static double conf = 0.05; // Woot?
+	private static double conf = 0.35; // Woot?
 
 	private static double gamma = 0.9; // Decay of rewards
 
@@ -74,7 +74,8 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	
 	private Map<State, Action> policy = null;
 	
-	private final boolean DEBUG = true;
+	private final boolean DEBUG = false;
+	private boolean newStateAction = false;
 	
 	public ConfidenceIntervalAlgorithm(){
 		
@@ -194,8 +195,11 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 //		updateObservedStateTrans(lastStateAction, sprime);
 //		updateStateActionStateCounter(new StateActionState(lastStateAction,
 //				sprime));
-		
+		if(!model.getObservedStates().contains(sprime)){
+			addActions(sprime);
+		}
 		model.addObservation(lastStateAction.getState(), lastStateAction.getAction(), sprime, r);
+//		updateQ(sa, upper)
 		
 		Action bestAction = new Action(actionDims, 0, 0);
 		
@@ -203,24 +207,29 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		 * Ta inte bort, allt blir kass
 		 */
 
-		if(step == numberOfAlgorithmRuns){
+	/*	if(newStateAction && step > startSample){
+			System.out.println("Antal samples: " + step);
+			performPlanning();
+			computePolicy();				
+			newStateAction=false;
+		}
+		else*/ if(step >= numberOfAlgorithmRuns){
 			System.out.println("Antal samples: " + step);
 			performPlanning();
 			computePolicy();
-			numberOfAlgorithmRuns=numberOfAlgorithmRuns+1000;
+			numberOfAlgorithmRuns=numberOfAlgorithmRuns+100;
 		}
 		
 		
 		if(step<startSample){
 			List<List<Integer>> possibleActions =  Utilities.getActions(sprime.intArray, NBR_REACHES, HABITATS_PER_REACHES);
 			int randomIndex = (int) (Math.random()*possibleActions.size());
-			System.out.println(randomIndex);
 			List<Integer> randomAction = possibleActions.get(randomIndex);
-				Action action = new Action(NBR_REACHES,0);
-				for(int i = 0; i < randomAction.size(); i++) {
-					action.setInt(i,randomAction.get(i));
-				}
-				bestAction = action;
+			Action action = new Action(NBR_REACHES,0);
+			for(int i = 0; i < randomAction.size(); i++) {
+				action.setInt(i,randomAction.get(i));
+			}
+			bestAction = action;
 		} else {
 			
 			Action tmp = policy.get(sprime);
@@ -246,7 +255,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		}
 		
 		lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
-		
+		newStateAction = !model.getObservedTransKeys().contains(lastStateAction);
 		
 //		System.out.println(bestAction.intArray);
 
@@ -257,6 +266,22 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 //		}
 		
 		return bestAction; // return chosen action
+	}
+	
+	
+	private void addActions(State s){
+		List<List<Integer>> possibleAction = Utilities.getActions(s.intArray, NBR_REACHES, HABITATS_PER_REACHES);
+		Action action = new Action(NBR_REACHES,0);
+		for(List<Integer> list : possibleAction){
+			for(int i = 0; i < list.size(); i++) {
+				action.setInt(i,list.get(i));
+			}
+			if(optimistic){
+				qUppers.put(new StateAction(s,new ActionStep(action)), vMax);
+			}else{
+				qLowers.put(new StateAction(s, new ActionStep(action)), 0.0);
+			}
+		}
 	}
 
 	public void performPlanning() {
@@ -317,7 +342,9 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 			boolean allConverged = true;
 			for (StateAction sa : qUppers.keySet()) {
 				double tmp = upper ? qUppers.get(sa) : qLowers.get(sa);
-				updateQ(sa, upper);
+				if(model.getObservedTransKeys().contains(sa)){
+					updateQ(sa, upper);
+				}
 				double newQ = upper ? qUppers.get(sa) : qLowers.get(sa);
 				if (Math.abs(tmp - newQ) > convergenceFactor) {
 					allConverged = false;
@@ -412,6 +439,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 			boolean upper) {
 		
 		model.initPRoofPTilde(sa);
+		
 //		if(true){
 //			return;
 //		}
