@@ -19,6 +19,8 @@ public class Model {
 
 	private int debug=0;
 	
+	private static final double DISCOUNT = 0.9;
+	
 	private Map<StateActionState, Double> pTilde;
 	private Map<StateActionState, Double> pRoof;
 	private List<State> sPrimes;
@@ -61,10 +63,24 @@ public class Model {
 		int nsas = NSAS(sas);
 		NSAS.put(sas, nsas + 1);
 
-		this.reward.put(sa, reward);
+		
+		updateReward(sa, reward);
 
 		updateObservedTrans(new StateAction(prev, act), sPrime);
 
+	}
+
+	private void updateReward(StateAction sa, double reward) {
+		double d = reward(sa);
+		double discountedRew;
+		if(this.reward.containsKey(sa)){
+			discountedRew = d * DISCOUNT;
+			discountedRew += reward * 1-DISCOUNT;
+		} else {
+			discountedRew = reward;
+		}
+		this.reward.put(sa, discountedRew);
+		
 	}
 
 	private void updateObservedTrans(StateAction sa, State sPrime) {
