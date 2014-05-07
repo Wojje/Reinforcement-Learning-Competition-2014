@@ -38,6 +38,11 @@ public class ActionStep extends Action {
 		return true;
 	}
 	
+	public String toString(){
+		//Make cleaner
+		return Arrays.toString(this.intArray);
+	}
+	
 	
 
 }

@@ -19,6 +19,8 @@ public class Model {
 
 	private int debug=0;
 	
+	private static final double DISCOUNT = 0.9;
+	
 	private Map<StateActionState, Double> pTilde;
 	private Map<StateActionState, Double> pRoof;
 	private List<State> sPrimes;
@@ -59,23 +61,32 @@ public class Model {
 
 		StateActionState sas = new StateActionState(sa, sPrime);
 		int nsas = NSAS(sas);
-		NSAS.put(sas, nsas + 1);
+		NSAS.put(sas, nsas + 1);		
 		
-		int visits = NSA.get(sa);
+		updateReward(sa, reward);
 		
+		updateObservedTrans(new StateAction(prev, act), sPrime);
+
+	}
+
+	private void updateReward(StateAction sa, double reward) {
+		double d = reward(sa);
+		double discountedRew;
 		double oldReward = 0;
+		int visits = NSA.get(sa);
 
 		if (this.reward.containsKey(sa)) {
 			oldReward = this.reward.get(sa);
 		}
 
-		this.reward.put(sa, (oldReward*(visits) + reward) / (visits+1));
-		//Borde väl vara:
-		//this.reward.put(sa, (oldReward*(visits-1) + reward) / (visits));
-		//men E3-algoritmen använder den övre uträkningen. Kollar med dom senare.
+		if(this.reward.containsKey(sa)){
+			discountedRew = d * DISCOUNT;
+			discountedRew += reward * 1-DISCOUNT;
+		} else {
+			discountedRew = reward;
+		}
+		this.reward.put(sa, (oldReward*(visits) + discountedRew) / (visits+1));
 		
-		updateObservedTrans(new StateAction(prev, act), sPrime);
-
 	}
 
 	private void updateObservedTrans(StateAction sa, State sPrime) {

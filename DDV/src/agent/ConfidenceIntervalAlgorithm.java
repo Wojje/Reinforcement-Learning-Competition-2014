@@ -1,16 +1,13 @@
 package agent;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.rlcommunity.rlglue.codec.AgentInterface;
 import org.rlcommunity.rlglue.codec.taskspec.TaskSpec;
@@ -18,22 +15,28 @@ import org.rlcommunity.rlglue.codec.taskspec.ranges.DoubleRange;
 import org.rlcommunity.rlglue.codec.taskspec.ranges.IntRange;
 import org.rlcommunity.rlglue.codec.types.Action;
 import org.rlcommunity.rlglue.codec.types.Observation;
-import org.rlcommunity.rlglue.codec.types.RL_abstract_type;
 import org.rlcommunity.rlglue.codec.util.AgentLoader;
 
-import utils.*;
+import utils.ActionStep;
+import utils.State;
+import utils.StateAction;
+import utils.StateActionState;
+import utils.Utilities;
 
 public class ConfidenceIntervalAlgorithm implements AgentInterface {
-	private static final int startSample = 50;
+	private static final int startSample = 1000; // IT'S A MAGIC IN ME!!!
 	private static int numberOfAlgorithmRuns = startSample;
 
-	public static final int NBR_REACHES = 2;
-    public static final int HABITATS_PER_REACHES = 2;
+	private static double magicPostivConstant; // borde varit final
+	
+	
+	public static int NBR_REACHES;
+    public static int HABITATS_PER_REACHES;
 	
     private int actionDims;
     
 	private double totalReward = 0;
-	boolean optimistic = true;
+	boolean optimistic = false;
 	
 	private int obsRangeMin;
 	private static int obsRangeMax;
@@ -46,18 +49,14 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 
 	private static StateAction lastStateAction;
 
-	private double accuracy = 0.1; // Proper value?
+	//private double accuracy = 0.1; // Proper value?
 	private static double conf = 0.05; // Woot?
 
 	private static double gamma = 0.9; // Decay of rewards
 
 	private static double convergenceFactor = 0.01;
 
-//	private static List<State> observedStates;
 	private static Map<StateAction, Set<State>> observedStateTrans;
-//	private static Map<StateActionState, Integer> stateActionStateCounter;
-//	private static Map<StateAction, Integer> stateActionCounter;
-//	private static Map<StateAction, Double> observedRewards;
 
 	private static Map<StateAction, Double> qUppers;
 	private static Map<StateAction, Double> qLowers;
@@ -75,34 +74,11 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	
 	private Map<State, Action> policy = null;
 	
-//	public ConfidenceIntervalAlgorithm(){
-//		
-//	}
-//	
-//	public ConfidenceIntervalAlgorithm(int minState, int maxState, int minAct, int maxAct, double maxRew, boolean optimistic){
-//		actRangeMax = maxAct;
-//		actRangeMin = minAct;
-//		obsRangeMax = maxState;
-//		obsRangeMin = minState;
-//		this.maxRew = maxRew;
-//		this.optimistic=optimistic;
-//		model = new Model(maxState, conf);
-//		
-////		minRew = theRewardRange.getMin();
-//
-//		vMax = maxRew / (1 - gamma);
-//
-////		observedRewards = new HashMap<StateAction, Double>();
-//		observedStateTrans = new HashMap<StateAction, Set<State>>();
-////		observedStates = new LinkedList<State>();
-//
-////		stateActionCounter = new HashMap<StateAction, Integer>();
-////		stateActionStateCounter = new HashMap<StateActionState, Integer>();
-//		qUppers = new HashMap<StateAction, Double>();
-//		qLowers = new HashMap<StateAction, Double>();
-//		vUppers = new HashMap<State, Double>();
-//		vLowers = new HashMap<State, Double>();
-//	}
+	private final boolean DEBUG = true;
+	
+	public ConfidenceIntervalAlgorithm(){
+		
+	}
 	
 	public static void main(String[] args){
      	AgentLoader theLoader=new AgentLoader(new ConfidenceIntervalAlgorithm());
@@ -115,6 +91,16 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 
 	public void agent_end(double reward) {
 		// TODO Auto-generated method stub
+		if(DEBUG){
+			System.out.println("------Q-VALUES------");
+			printQValues();
+			System.out.println("------V-values------");
+			printValues();
+			System.out.println("------POLICY------");
+			printPolicy();
+			System.out.println("------------");
+			
+		}
 	}
 
 	public void agent_init(String taskSpec) {
@@ -134,26 +120,30 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		DoubleRange theRewardRange = theTaskSpec.getRewardRange();
 		System.out.println("Reward range is: " + theRewardRange.getMin()
 				+ " to " + theRewardRange.getMax());
+/*
+ * ï¿½ndrade ifrï¿½n obsRangeMax till observationsDimension
+ */
+		model = new Model((int) Math.pow(3, theTaskSpec.getNumDiscreteObsDims()), conf);
+		
+		actionDims = theTaskSpec.getNumDiscreteActionDims(); //reach
+		NBR_REACHES = actionDims;  // reach
+		HABITATS_PER_REACHES = theTaskSpec.getNumDiscreteObsDims()/NBR_REACHES;
 
-		model = new Model(obsRangeMax, conf);
+		magicPostivConstant = 11.6*NBR_REACHES + 0.9*NBR_REACHES*HABITATS_PER_REACHES;
 		
-		actionDims = theTaskSpec.getNumDiscreteActionDims();
-		
+		System.out.println(NBR_REACHES + "---" + HABITATS_PER_REACHES);
 		actRangeMax = theActRange.getMax();
 		actRangeMin = theActRange.getMin();
 		obsRangeMax = theObsRange.getMax();
 		obsRangeMin = theObsRange.getMin();
-		maxRew = theRewardRange.getMax();
+		maxRew = theRewardRange.getMax() + magicPostivConstant;
 //		minRew = theRewardRange.getMin();
 
 		vMax = maxRew / (1 - gamma);
 
-//		observedRewards = new HashMap<StateAction, Double>();
 		observedStateTrans = new HashMap<StateAction, Set<State>>();
-//		observedStates = new LinkedList<State>();
-//		stateActionCounter = new HashMap<StateAction, Integer>();
-//		stateActionStateCounter = new HashMap<StateActionState, Integer>();
 
+		policy = new HashMap<State, Action>();
 
 
 		qUppers = new HashMap<StateAction, Double>();
@@ -174,23 +164,28 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 //		observedStates.add(stateZero);
 		model.addStartState(o);
 		
-		Action bestAction = new Action(actionDims, 0, 0);
-//		bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
-		for(int i = 0; i < actionDims; i++) {
-			bestAction.setInt(i, 1);
+		Action bestAction;
+		
+		Action tmp = policy.get(stateZero);
+		 
+		if(tmp == null){
+			bestAction = new Action(actionDims, 0, 0);
+			for(int i = 0; i < actionDims; i++) {
+				bestAction.setInt(i, 1);
+			}
+		} else {
+			bestAction = tmp;
 		}
 		
 		lastStateAction = new StateAction(stateZero, new ActionStep(bestAction));
 //		updateStateActionCounter(lastStateAction);
-//		System.out.println(bestAction.intArray);
 
 		return bestAction;
 	}
 	
-//	Random random = new Random();
 
 	public Action agent_step(double r, Observation o) {
-		r=r+11.6*NBR_REACHES + 0.9*NBR_REACHES*HABITATS_PER_REACHES;
+		r=r+magicPostivConstant;
 		step++;
 		totalReward+=r;
 		State sprime = new State(o);
@@ -202,19 +197,54 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		
 		model.addObservation(lastStateAction.getState(), lastStateAction.getAction(), sprime, r);
 		
-//		if(step == numberOfAlgorithmRuns){
-//			System.out.println("Antal samples: " + step);
-			doAwesomeStuff();
-//			numberOfAlgorithmRuns=numberOfAlgorithmRuns+25;
-//		}
-		
 		Action bestAction = new Action(actionDims, 0, 0);
-//		if(sprime.getInt(0) == 3 || sprime.getInt(0) == 7){
-//			bestAction.setInt(0, 4);
-//		} else {
-			bestAction = computeMaxAction(sprime, optimistic);
-//			bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
-//		}				
+		
+		/*
+		 * Ta inte bort, allt blir kass
+		 */
+
+		if(step == numberOfAlgorithmRuns){
+			System.out.println("Antal samples: " + step);
+			performPlanning();
+			computePolicy();
+			numberOfAlgorithmRuns=numberOfAlgorithmRuns+1000;
+		}
+		
+		
+		if(step<startSample){
+			List<List<Integer>> possibleActions =  Utilities.getActions(sprime.intArray, NBR_REACHES, HABITATS_PER_REACHES);
+			int randomIndex = (int) (Math.random()*possibleActions.size());
+			System.out.println(randomIndex);
+			List<Integer> randomAction = possibleActions.get(randomIndex);
+				Action action = new Action(NBR_REACHES,0);
+				for(int i = 0; i < randomAction.size(); i++) {
+					action.setInt(i,randomAction.get(i));
+				}
+				bestAction = action;
+		} else {
+			
+			Action tmp = policy.get(sprime);
+			if(tmp == null){
+				bestAction = new Action(actionDims, 0, 0);
+				for(int i = 0; i < actionDims; i++) {
+					bestAction.setInt(i, 1);
+				}
+			} else {
+				bestAction = tmp;
+			}
+
+			if(DEBUG && step % 1000 == 0){
+				System.out.println("------Q-VALUES------");
+				printQValues();
+				System.out.println("------V-values------");
+				printValues();
+				System.out.println("------POLICY------");
+				printPolicy();
+				System.out.println("------------");
+				
+			}
+		}
+		
 		lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
 		
 		
@@ -229,8 +259,8 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		return bestAction; // return chosen action
 	}
 
-	public void doAwesomeStuff() {
-		updateQ(lastStateAction, !optimistic);
+	public void performPlanning() {
+		updateQ(lastStateAction, optimistic);
 		if(optimistic){
 			updateQUpper();
 			updateVUpper();
@@ -279,10 +309,6 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 			}
 		}
 		vLowers = v;
-	}
-
-	private void updateMuUpper() {
-		// Equation 8
 	}
 
 	private void iterateQ(boolean upper) {
@@ -355,18 +381,20 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	private Action computeMaxAction(State obs, boolean upper){
 		double biggest = Double.NEGATIVE_INFINITY;
 		Action chosedAction=null;
-//		for(int a = actRangeMin; a <= actRangeMax;a++){
 		for(List<Integer> a: Utilities.getActions(obs.intArray, NBR_REACHES, HABITATS_PER_REACHES)){
 			Action action = new Action(NBR_REACHES,0);
 			for(int i = 0; i < a.size(); i++) {
-				action.setInt(i,a.get(i));
+				action.setInt(i, a.get(i));
 			}
 			StateAction sa = new StateAction(obs, new ActionStep(action));
 			Double lookUp;
-			if(upper)
+			
+			if(upper){
 				lookUp = qUppers.get(sa);
-			else
+			} else {
 				lookUp = qLowers.get(sa);
+			}
+			
 			if(lookUp == null){
 				lookUp=vMax;
 			}
@@ -384,6 +412,9 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 			boolean upper) {
 		
 		model.initPRoofPTilde(sa);
+//		if(true){
+//			return;
+//		}
 		
 		double deltaOmega = model.omega(sa)/2.0;
 		double zeta;
@@ -407,7 +438,6 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 			State max = argmax(sa, upper);
 //			if(max == null){
 //				System.out.println("Oj, max var null!");
-//				System.out.println("S' innehöll: " + model.getSprimes().size() + " värden");
 //				for(State s:model.getSprimes()){
 //					System.out.print(" S: "+ s.getInt(0));
 //					System.out.println();
@@ -494,8 +524,8 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		LinkedList<StateAction> keys = new LinkedList<StateAction>(qUppers.keySet());
 		Collections.sort(keys, new StateActionComparator());
 		for(StateAction sa : keys){
-			String s = "S: "+sa.getState().getInt(0)+
-						" A: "+sa.getAction().getInt(0) +
+			String s = "S: "+sa.getState()+
+						" A: "+sa.getAction() +
 						" QUpper: " + qUppers.get(sa) + 
 						" QLower: " + qLowers.get(sa);
 			System.out.println(s);
@@ -504,9 +534,9 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	
 	public void printValues(){
 		LinkedList<State> keys = new LinkedList<State>(vUppers.keySet());
-		Collections.sort(keys, new StateComparator());
+//		Collections.sort(keys, new StateComparator());
 		for(State s : keys){
-			String str = "S: "+s.getInt(0)+
+			String str = "S: "+s+
 						" VUpper: " + vUppers.get(s) + 
 						" VLower: " + vLowers.get(s);
 			System.out.println(str);
@@ -521,7 +551,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	public void computePolicy(){
 		LinkedList<State> keys = new LinkedList<State>(model.getObservedStates());
 		 
-		Collections.sort(keys, new StateComparator());
+//		Collections.sort(keys, new StateComparator());
 		Action a;
 		Map<State, Action> policy = new HashMap<State, Action>();
 		for(State s : keys){
@@ -533,17 +563,24 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	}
 	
 	public void printPolicy(){
-		//Hard coded for gridworld atm
 		String str;
 		if(policy == null){
-			computePolicy();
+			System.out.println("No policy yet");
 		}
+		
 		LinkedList<State> keys = new LinkedList<State>(model.getObservedStates());
 		 
-		Collections.sort(keys, new StateComparator());
+//		Collections.sort(keys, new StateComparator());
 		for(State s : keys){
-			str = "S: "+s.getInt(0);
-			str += " A: "+policy.get(s).getInt(0);
+			str = "S: "+ s;
+			Action a = policy.get(s);
+			str += " A: " + a;
+			str += " NSA ";
+			if(a != null){
+			 str += model.NSA(new StateAction(s, new ActionStep(policy.get(s))));
+			} else {
+				str += " No action ";
+			}
 			System.out.println(str);
 		}
 		
