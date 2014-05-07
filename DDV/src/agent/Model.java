@@ -60,9 +60,20 @@ public class Model {
 		StateActionState sas = new StateActionState(sa, sPrime);
 		int nsas = NSAS(sas);
 		NSAS.put(sas, nsas + 1);
+		
+		int visits = NSA.get(sa);
+		
+		double oldReward = 0;
 
-		this.reward.put(sa, reward);
+		if (this.reward.containsKey(sa)) {
+			oldReward = this.reward.get(sa);
+		}
 
+		this.reward.put(sa, (oldReward*(visits) + reward) / (visits+1));
+		//Borde väl vara:
+		//this.reward.put(sa, (oldReward*(visits-1) + reward) / (visits));
+		//men E3-algoritmen använder den övre uträkningen. Kollar med dom senare.
+		
 		updateObservedTrans(new StateAction(prev, act), sPrime);
 
 	}

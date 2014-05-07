@@ -212,7 +212,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 //		if(sprime.getInt(0) == 3 || sprime.getInt(0) == 7){
 //			bestAction.setInt(0, 4);
 //		} else {
-			bestAction = computeMaxAction(sprime, !optimistic);
+			bestAction = computeMaxAction(sprime, optimistic);
 //			bestAction.setInt(0, (int)(Math.random() * (4))); //Hard-coded for GridWorldMDP
 //		}				
 		lastStateAction = new StateAction(sprime, new ActionStep(bestAction));
@@ -230,7 +230,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	}
 
 	public void doAwesomeStuff() {
-		updateQ(lastStateAction, optimistic);
+		updateQ(lastStateAction, !optimistic);
 		if(optimistic){
 			updateQUpper();
 			updateVUpper();
