@@ -24,8 +24,9 @@ import utils.StateActionState;
 import utils.Utilities;
 
 public class ConfidenceIntervalAlgorithm implements AgentInterface {
-	private static final int startSample = 1000; // IT'S A MAGIC IN ME!!!
-	private static int numberOfAlgorithmRuns = startSample;
+	private static final int startSample = 1; // IT'S A MAGIC IN ME!!!
+	private static int numberOfAlgorithmRuns = 10;
+	private final boolean DEBUG = true;
 
 	private static double magicPostivConstant; // borde varit final
 	
@@ -74,7 +75,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	
 	private Map<State, Action> policy = null;
 	
-	private final boolean DEBUG = false;
+	
 	private boolean newStateAction = false;
 	
 	public ConfidenceIntervalAlgorithm(){
@@ -137,7 +138,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		actRangeMin = theActRange.getMin();
 		obsRangeMax = theObsRange.getMax();
 		obsRangeMin = theObsRange.getMin();
-		maxRew = theRewardRange.getMax() + magicPostivConstant;
+		maxRew =  magicPostivConstant;
 //		minRew = theRewardRange.getMin();
 
 		vMax = maxRew / (1 - gamma);
@@ -217,7 +218,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 			System.out.println("Antal samples: " + step);
 			performPlanning();
 			computePolicy();
-			numberOfAlgorithmRuns=numberOfAlgorithmRuns+100;
+			numberOfAlgorithmRuns=numberOfAlgorithmRuns*2;
 		}
 		
 		
@@ -601,10 +602,13 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 //		Collections.sort(keys, new StateComparator());
 		for(State s : keys){
 			str = "S: "+ s;
-			Action a = policy.get(s);
+			ActionStep a = null;
+			if(policy.get(s) != null){
+				a = new ActionStep(policy.get(s));
+			}
 			str += " A: " + a;
 			str += " NSA ";
-			if(a != null){
+			if(policy.get(s) != null){
 			 str += model.NSA(new StateAction(s, new ActionStep(policy.get(s))));
 			} else {
 				str += " No action ";

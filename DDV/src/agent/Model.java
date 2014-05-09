@@ -188,13 +188,13 @@ public class Model {
 		
 		
 		
-/*		
+		
 		if(observedStates.size() < nbrOfStates){
 			State unknown = new State(new Observation(1, 0));
 			unknown.setInt(0, -5);
 			ret.put(new StateActionState(sa, unknown), 0.0);
 		}
-*/	
+	
 		pRoof = ret;
 /*		if(debug%10000 == 0){
 			System.out.println("Antal loper i pRoof: " + debug);
