@@ -86,7 +86,10 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	public void agent_end(double reward) {
 
 	}
-
+	/*
+	 * RL-glue method, initiate the agent at experiment start.
+	 * @see org.rlcommunity.rlglue.codec.AgentInterface#agent_init(java.lang.String)
+	 */
 	public void agent_init(String taskSpec) {
 		TaskSpec theTaskSpec = new TaskSpec(taskSpec);
 		System.out.println("CI agent parsed the task spec.");
@@ -134,7 +137,10 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	public String agent_message(String arg0) {
 		return null;
 	}
-
+/*
+ * RL-Glue specific. Starts the agent
+ * @see org.rlcommunity.rlglue.codec.AgentInterface#agent_start(org.rlcommunity.rlglue.codec.types.Observation)
+ */
 	public Action agent_start(Observation o) {
 		State start = new State(o);
 		if (!model.getObservedStates().contains(start)) {
@@ -158,7 +164,10 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		return bestAction;
 	}
 	
-
+/*
+ * RL-Glue specific. Chooses the next action.
+ * @see org.rlcommunity.rlglue.codec.AgentInterface#agent_step(double, org.rlcommunity.rlglue.codec.types.Observation)
+ */
 	public Action agent_step(double r, Observation o) {
 		r+=maxPosReward;
 		step++;
@@ -177,7 +186,6 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 				System.out.println(totalMassToMove(lastStateAction) + 
 						" " + lastStateAction.getState());
 			}
-//			System.out.println(vUppers);
 			
 		} catch (ArithmeticException e) {
 			
@@ -274,7 +282,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 
 	private Map<State, Double> findProbs(StateAction sa) {
 		//Get real probabilities
-		Map<State, Double> realProbs = new HashMap<>(); 
+		Map<State, Double> realProbs = new HashMap<State, Double>(); 
 		int NSA = model.NSA(sa);
 		for(State nextS : model.getObservedStates()) {
 			int NSAS = model.NSAS(new StateActionState(sa, nextS));
@@ -301,7 +309,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	
 	private Map<State,Double> upperP(Map<State,Double> realProbs, StateAction sa) {
 		double totalMassToMove = totalMassToMove(sa);
-		Map<State,Double> retProbs = new HashMap<>(realProbs);
+		Map<State,Double> retProbs = new HashMap<State, Double>(realProbs);
 		
 		//double massToUnvisited = model.missingMass(sa);
 		
