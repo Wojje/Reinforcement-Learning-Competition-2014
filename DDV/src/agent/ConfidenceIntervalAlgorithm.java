@@ -24,7 +24,7 @@ import utils.StateActionState;
 import utils.Utilities;
 
 public class ConfidenceIntervalAlgorithm implements AgentInterface {
-	private static final int startSample = 30000; // IT'S A MAGIC IN ME!!!
+	private static final int startSample = 2; // IT'S A MAGIC IN ME!!!
 	private static int numberOfAlgorithmRuns = startSample;
 
 	private static double maxPosReward; // borde varit final
@@ -181,13 +181,16 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		} catch (ArithmeticException e) {
 			
 		}
-		if (step % 100 == 0) findQuppers();
+		if (step >= numberOfAlgorithmRuns){ 
+			findQuppers();
+			numberOfAlgorithmRuns= (int )(numberOfAlgorithmRuns * 1.5);
+		}
 		bestAction = findBestActionFromQ(nextS);
 		
-		if(step >= numberOfAlgorithmRuns){
+	/*	if(step >= numberOfAlgorithmRuns){
 			System.out.println("Antal samples: " + step);
 			numberOfAlgorithmRuns=numberOfAlgorithmRuns+100;
-		}
+		}*/
 		lastStateAction = new StateAction(nextS, bestAction);		
 		return bestAction; // return chosen action
 	}
@@ -273,7 +276,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 
 	private Map<State, Double> findProbs(StateAction sa) {
 		//Get real probabilities
-		Map<State, Double> realProbs = new HashMap<>(); 
+		Map<State, Double> realProbs = new HashMap<State, Double>(); 
 		int NSA = model.NSA(sa);
 		for(State nextS : model.getObservedStates()) {
 			int NSAS = model.NSAS(new StateActionState(sa, nextS));
@@ -294,13 +297,12 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		int stateCount = model.getObservedStates().size();
 		
 		double den = 2*(Math.log(2*Math.pow(2,stateCount) - 2) - Math.log(conf));
-		if (false /*step > 40000*/) {return 0.0; }
-		else {return (Math.sqrt((den/((double)NSA)))) / 2.0;}
+		return (Math.sqrt((den/((double)NSA)))) / 2.0;
 	}
 	
 	private Map<State,Double> upperP(Map<State,Double> realProbs, StateAction sa) {
 		double totalMassToMove = totalMassToMove(sa);
-		Map<State,Double> retProbs = new HashMap<>(realProbs);
+		Map<State,Double> retProbs = new HashMap<State, Double>(realProbs);
 		
 		double massToUnvisited = model.missingMass(sa);
 		
