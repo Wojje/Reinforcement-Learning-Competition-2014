@@ -17,8 +17,6 @@ import utils.StateActionState;
 
 public class Model {
 
-	private int debug=0;
-	
 	private static final double DISCOUNT = 0.9;
 	
 	private Map<StateActionState, Double> pTilde;
@@ -33,8 +31,6 @@ public class Model {
 	private int nbrOfStates;
 
 	public Model(int nbrOfStates, double conf) {
-		// pTilde = new HashMap<>();
-		// pRoof = new HashMap<>();
 		NSA = new HashMap<StateAction, Integer>();
 		NSAS = new HashMap<StateActionState, Integer>();
 		reward = new HashMap<StateAction, Double>();
@@ -138,10 +134,8 @@ public class Model {
 	}
 
 	public double omega(StateAction sa) {
-//		return Math.sqrt((2 * Math.log(Math.pow(2, nbrOfStates) - 2) - Math
-//				.log(conf)) / NSA.get(sa));
 		if(NSA.get(sa)==null){
-			System.out.println("bajskorv");
+			System.out.println("If this message arrise, you have done something terribly wrong");
 		}
 		return Math.sqrt((2 * Math.log(Math.pow(2, observedStates.size()+1) - 2) - Math
 				.log(conf)) / NSA.get(sa));
@@ -196,18 +190,10 @@ public class Model {
 		}
 	
 		pRoof = ret;
-/*		if(debug%10000 == 0){
-			System.out.println("Antal loper i pRoof: " + debug);
-			for(Entry<StateActionState,Double> e : pRoof.entrySet()){
-				System.out.println("State: " + e.getKey().getState().getInt(0) + " Action: " + e.getKey().getAction().getInt(0) + " Future state: " +
-						e.getKey().getSprime().getInt(0) + " Likelyhood: " +  e.getValue());
-			}
-		}
-		debug++;*/
+
 	}
 	
 	public void printPtilde(){
-		//if(debug%10000 == 0){
 			System.out.println("Ptilde: ");
 			for(Entry<StateActionState,Double> e : pTilde.entrySet()){
 				System.out.print("State: " + e.getKey().getState().getInt(0));
@@ -218,8 +204,6 @@ public class Model {
 					System.out.print(" Future state: " + "NULL");
 				System.out.println(" Likelyhood: " +  e.getValue());
 			}
-		//}
-		//debug++;
 	}
 	
 
