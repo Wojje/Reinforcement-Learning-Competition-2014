@@ -51,7 +51,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	private static StateAction lastStateAction;
 
 	//private double accuracy = 0.1; // Proper value?
-	private static double conf = 0.35; // Woot?
+	private static double conf = 0.05; // Woot?
 
 	private static double gamma = 0.9; // Decay of rewards
 
