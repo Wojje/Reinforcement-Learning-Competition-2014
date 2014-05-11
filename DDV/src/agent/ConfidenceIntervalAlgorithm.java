@@ -49,7 +49,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	private static StateAction lastStateAction;
 
 	//private double accuracy = 0.1; // Proper value?
-	private static double conf = 0.05; // Woot?
+	private static double conf = 0.1; // Woot?
 
 	private static double gamma = 0.9; // Decay of rewards
 
@@ -86,10 +86,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	public void agent_end(double reward) {
 
 	}
-	/*
-	 * RL-glue method, initiate the agent at experiment start.
-	 * @see org.rlcommunity.rlglue.codec.AgentInterface#agent_init(java.lang.String)
-	 */
+
 	public void agent_init(String taskSpec) {
 		TaskSpec theTaskSpec = new TaskSpec(taskSpec);
 		System.out.println("CI agent parsed the task spec.");
@@ -124,8 +121,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 //		minRew = theRewardRange.getMin();
 
 		vMax = maxRew / (1 - gamma);
-		vMax = 450;
-
+		
 		observedStateTrans = new HashMap<StateAction, Set<State>>();
 
 		policy = new HashMap<State, Action>();
@@ -137,10 +133,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	public String agent_message(String arg0) {
 		return null;
 	}
-/*
- * RL-Glue specific. Starts the agent
- * @see org.rlcommunity.rlglue.codec.AgentInterface#agent_start(org.rlcommunity.rlglue.codec.types.Observation)
- */
+
 	public Action agent_start(Observation o) {
 		State start = new State(o);
 		if (!model.getObservedStates().contains(start)) {
@@ -164,10 +157,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		return bestAction;
 	}
 	
-/*
- * RL-Glue specific. Chooses the next action.
- * @see org.rlcommunity.rlglue.codec.AgentInterface#agent_step(double, org.rlcommunity.rlglue.codec.types.Observation)
- */
+
 	public Action agent_step(double r, Observation o) {
 		r+=maxPosReward;
 		step++;
@@ -186,6 +176,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 				System.out.println(totalMassToMove(lastStateAction) + 
 						" " + lastStateAction.getState());
 			}
+//			System.out.println(vUppers);
 			
 		} catch (ArithmeticException e) {
 			
@@ -282,7 +273,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 
 	private Map<State, Double> findProbs(StateAction sa) {
 		//Get real probabilities
-		Map<State, Double> realProbs = new HashMap<State, Double>(); 
+		Map<State, Double> realProbs = new HashMap<>(); 
 		int NSA = model.NSA(sa);
 		for(State nextS : model.getObservedStates()) {
 			int NSAS = model.NSAS(new StateActionState(sa, nextS));
@@ -309,13 +300,13 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	
 	private Map<State,Double> upperP(Map<State,Double> realProbs, StateAction sa) {
 		double totalMassToMove = totalMassToMove(sa);
-		Map<State,Double> retProbs = new HashMap<State, Double>(realProbs);
+		Map<State,Double> retProbs = new HashMap<>(realProbs);
 		
-		//double massToUnvisited = model.missingMass(sa);
+		double massToUnvisited = model.missingMass(sa);
 		
 		while (totalMassToMove > 0.0) {
 			State sWorst = findWorstNextState(sa, retProbs);
-			State sBest = findBestNextState(sa, retProbs);
+			State sBest = findBestNextState(sa, retProbs, massToUnvisited > 0.0);
 			if (sWorst == sBest) break;
 			//Only move as much as "fits"
 			if (retProbs.get(sWorst) == null) {
@@ -325,13 +316,15 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 			Double bestProb = retProbs.get(sBest);
 			bestProb = bestProb == null ? 0.0 : bestProb;
 			massToMove = Math.min(massToMove, 1-bestProb);
+			if (model.NSAS(new StateActionState(sa,sBest)) == 0) 
+				massToMove = Math.min(massToMove, massToUnvisited);
 			retProbs.put(sWorst, retProbs.get(sWorst) - massToMove);
 			retProbs.put(sBest, bestProb + massToMove);
 			if (retProbs.get(sBest) == 1.0) break;
 			totalMassToMove -= massToMove;
-			/*if (NSAS(new StateActionState(sa, sBest)) == 0) {
-				
-			}*/
+			if (model.NSAS(new StateActionState(sa, sBest)) == 0) {
+				massToUnvisited -= massToMove;
+			}
 		}
 		return retProbs;
 	}
@@ -357,14 +350,17 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		return worst;
 	}
 	
-	private State findBestNextState(StateAction sa, Map<State,Double> probs) {
+	private State findBestNextState(StateAction sa, Map<State,Double> probs, 
+			boolean allowZeroTargets) {
 		State best = null;
 		Double bestValue = Double.NEGATIVE_INFINITY;
 		for(State nextS : model.getObservedStates()) {
 			Double v = vUppers.get(nextS);
 			if (v > bestValue && (probs.get(sa) == null || probs.get(sa) != 1.0)) {
-				best = nextS;
-				bestValue = v;
+				if (allowZeroTargets || model.NSAS(new StateActionState(sa,nextS))!= 0) {
+					best = nextS;
+					bestValue = v;
+				}
 			} 
 		}
 		if (best == null) {

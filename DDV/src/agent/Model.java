@@ -31,6 +31,7 @@ public class Model {
 	private Set<State> observedStates;
 	private double conf;
 	private int nbrOfStates;
+	private int nbrOfStateActions;
 
 	public Model(int nbrOfStates, double conf) {
 		// pTilde = new HashMap<>();
@@ -41,6 +42,8 @@ public class Model {
 		observedStates = new HashSet<State>();
 		observedStateTrans = new HashMap<StateAction, Set<State>>();
 
+		
+		
 		this.nbrOfStates = nbrOfStates;
 		this.conf = conf;
 	}
@@ -188,13 +191,13 @@ public class Model {
 		
 		
 		
-		
+/*		
 		if(observedStates.size() < nbrOfStates){
 			State unknown = new State(new Observation(1, 0));
 			unknown.setInt(0, -5);
 			ret.put(new StateActionState(sa, unknown), 0.0);
 		}
-	
+*/	
 		pRoof = ret;
 /*		if(debug%10000 == 0){
 			System.out.println("Antal loper i pRoof: " + debug);
@@ -231,7 +234,24 @@ public class Model {
 			}
 		}
 	}
-
+	
+	
+	
+	public double missingMass(StateAction sa) {
+		return (double) nrOfOneVisitTargets(sa) / (double) NSA(sa);
+	}
+	
+	private int nrOfOneVisitTargets(StateAction sa) {
+		int count = 0;
+		for(State s : observedStates) {
+			if (NSAS(new StateActionState(sa, s)) == 1) {
+				count++;
+			}
+		}
+		return count;
+		
+	}
+	
 	public void removeSprime(State min){
 		sPrimes.remove(min);
 	}
