@@ -49,7 +49,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	private static StateAction lastStateAction;
 
 	//private double accuracy = 0.1; // Proper value?
-	private static double conf = 0.1; // Woot?
+	private static double conf = 0.05; // Woot?
 
 	private static double gamma = 0.9; // Decay of rewards
 
@@ -183,7 +183,12 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		}
 		if (step >= numberOfAlgorithmRuns){ 
 			findQuppers();
-			numberOfAlgorithmRuns= (int )(numberOfAlgorithmRuns * 1.5);
+			if(numberOfAlgorithmRuns <2000){
+				numberOfAlgorithmRuns= (int )(numberOfAlgorithmRuns * 1.5);
+			}
+			else{
+				numberOfAlgorithmRuns+=2000;
+			}
 		}
 		bestAction = findBestActionFromQ(nextS);
 		
