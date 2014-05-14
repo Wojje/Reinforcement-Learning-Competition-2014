@@ -20,6 +20,7 @@ public class Model {
 	private int debug=0;
 	
 	private static final double DISCOUNT = 0.9;
+	private static final double EPS = 0.0001;
 	
 	private Map<StateActionState, Double> pTilde;
 	private Map<StateActionState, Double> pRoof;
@@ -160,6 +161,15 @@ public class Model {
 	
 	public List<State> getSprimes() {
 		return sPrimes;
+	}
+	
+	private boolean isInteger(double d){
+		int round = (int) d;
+		return round + EPS > d && d > round - EPS; 
+	}
+	
+	public boolean NSAhasDoubled(StateAction sa){
+		return isInteger(Math.log(NSA.get(sa)) / Math.log(2.0));
 	}
 	
 	public Set<State> getPTildeSprimes(){

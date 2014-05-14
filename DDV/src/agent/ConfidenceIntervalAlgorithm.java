@@ -170,6 +170,12 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		
 		ActionStep bestAction = new ActionStep(new Action(actionDims, 0, 0));
 		
+		if(model.NSAhasDoubled(lastStateAction)){
+			findQuppers();
+			System.out.println(lastStateAction + " NSA "+model.NSA(lastStateAction));
+		}
+		
+		
 		try {
 			if (step % 100 == 0) {
 				System.out.print(step + ") " );
@@ -181,15 +187,17 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		} catch (ArithmeticException e) {
 			
 		}
-		if (step >= numberOfAlgorithmRuns){ 
-			findQuppers();
-			if(numberOfAlgorithmRuns <2000){
-				numberOfAlgorithmRuns= (int )(numberOfAlgorithmRuns * 1.5);
-			}
-			else{
-				numberOfAlgorithmRuns+=2000;
-			}
-		}
+//		if (step >= numberOfAlgorithmRuns){ 
+//			findQuppers();
+//			if(numberOfAlgorithmRuns <2000){
+//				numberOfAlgorithmRuns= (int )(numberOfAlgorithmRuns * 1.5);
+//			}
+//			else{
+//				numberOfAlgorithmRuns+=2000;
+//			}
+//		}
+		
+		
 		bestAction = findBestActionFromQ(nextS);
 		
 	/*	if(step >= numberOfAlgorithmRuns){
