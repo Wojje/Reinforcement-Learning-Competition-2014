@@ -26,6 +26,7 @@ import utils.Utilities;
 public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	private static final int startSample = 2; // IT'S A MAGIC IN ME!!!
 	private static int numberOfAlgorithmRuns = startSample;
+	private static final double FACTOR = 1.5;
 
 	private static double maxPosReward; // borde varit final
 	
@@ -170,9 +171,15 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		
 		ActionStep bestAction = new ActionStep(new Action(actionDims, 0, 0));
 		
-		if(model.NSAhasDoubled(lastStateAction)){
+		if(NBR_REACHES * HABITATS_PER_REACH < 10 && model.NSAhasDoubled(lastStateAction)){
 			findQuppers();
-			System.out.println(lastStateAction + " NSA "+model.NSA(lastStateAction));
+//			System.out.println(lastStateAction + " NSA "+model.NSA(lastStateAction));
+		} else {
+			if (step > numberOfAlgorithmRuns){
+				findQuppers();
+				numberOfAlgorithmRuns = (int) (numberOfAlgorithmRuns*FACTOR); 
+//				numberOfAlgorithmRuns += 100;
+			}
 		}
 		
 		
