@@ -193,40 +193,7 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 			
 		} catch (ArithmeticException e) {
 			
-		}
-////		if (step >= numberOfAlgorithmRuns){ 
-//			findQuppers();
-//			//if(numberOfAlgorithmRuns <2000){
-//				numberOfAlgorithmRuns= (int )(numberOfAlgorithmRuns * 2);
-////			}
-////			else{
-////				numberOfAlgorithmRuns+=5000;
-////			}
-//			bestAction = findBestActionFromQ(nextS);
-
-//		}
-/*		else{
-			List<List<Integer>> possibleActions =  Utilities.getActions(nextS.intArray, NBR_REACHES, HABITATS_PER_REACH);
-			int randomIndex = (int) (Math.random()*possibleActions.size());
-			List<Integer> randomAction = possibleActions.get(randomIndex);
-			Action action = new Action(NBR_REACHES,0);
-			for(int i = 0; i < randomAction.size(); i++) {
-				action.setInt(i,randomAction.get(i));
-			}
-			bestAction = new ActionStep(action);
-		}*/
-
-		if (step >= numberOfAlgorithmRuns){ 
-			findQuppers();
-			if(numberOfAlgorithmRuns <2000){
-				numberOfAlgorithmRuns= (int )(numberOfAlgorithmRuns * 1.5);
-			}
-			else{
-				numberOfAlgorithmRuns+=2000;
-			}
-		}
-		
-		
+		}		
 		bestAction = findBestActionFromQ(nextS);
 		
 	/*	if(step >= numberOfAlgorithmRuns){
@@ -339,8 +306,8 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		int stateCount = model.getObservedStates().size();
 		
 		if(stateCount<1000){
-		double den = 2*(Math.log(2*Math.pow(2,stateCount) - 2) - Math.log(conf));
-		return (Math.sqrt((den/((double)NSA)))) / 2.0;
+			double den = 2*(Math.log(2*Math.pow(2,stateCount) - 2) - Math.log(conf));
+			return (Math.sqrt((den/((double)NSA)))) / 2.0;
 		}
 		else{
 			return Math.sqrt( 2*(stateCount*Math.log(2)- Math.log(conf))/ (double) NSA);
