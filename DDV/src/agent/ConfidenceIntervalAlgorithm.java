@@ -24,7 +24,7 @@ import utils.StateActionState;
 import utils.Utilities;
 
 public class ConfidenceIntervalAlgorithm implements AgentInterface {
-	private static final int startSample = 2; // IT'S A MAGIC IN ME!!!
+	private static final int startSample = 20000; // IT'S A MAGIC IN ME!!!
 	private static int numberOfAlgorithmRuns = startSample;
 
 	private static double maxPosReward; // borde varit final
@@ -183,15 +183,25 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		}
 		if (step >= numberOfAlgorithmRuns){ 
 			findQuppers();
-			if(numberOfAlgorithmRuns <2000){
-				numberOfAlgorithmRuns= (int )(numberOfAlgorithmRuns * 1.5);
-			}
-			else{
-				numberOfAlgorithmRuns+=2000;
-			}
+			//if(numberOfAlgorithmRuns <2000){
+				numberOfAlgorithmRuns= (int )(numberOfAlgorithmRuns * 2);
+//			}
+//			else{
+//				numberOfAlgorithmRuns+=5000;
+//			}
+			bestAction = findBestActionFromQ(nextS);
+
 		}
-		bestAction = findBestActionFromQ(nextS);
-		
+		else{
+			List<List<Integer>> possibleActions =  Utilities.getActions(nextS.intArray, NBR_REACHES, HABITATS_PER_REACH);
+			int randomIndex = (int) (Math.random()*possibleActions.size());
+			List<Integer> randomAction = possibleActions.get(randomIndex);
+			Action action = new Action(NBR_REACHES,0);
+			for(int i = 0; i < randomAction.size(); i++) {
+				action.setInt(i,randomAction.get(i));
+			}
+			bestAction = new ActionStep(action);
+		}
 	/*	if(step >= numberOfAlgorithmRuns){
 			System.out.println("Antal samples: " + step);
 			numberOfAlgorithmRuns=numberOfAlgorithmRuns+100;
@@ -301,8 +311,15 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		}
 		int stateCount = model.getObservedStates().size();
 		
+		if(stateCount<1000){
 		double den = 2*(Math.log(2*Math.pow(2,stateCount) - 2) - Math.log(conf));
 		return (Math.sqrt((den/((double)NSA)))) / 2.0;
+		}
+		else{
+			return Math.sqrt( 2*(stateCount*Math.log(2)- Math.log(conf))/ (double) NSA);
+		}
+			
+		
 	}
 	
 	private Map<State,Double> upperP(Map<State,Double> realProbs, StateAction sa) {
