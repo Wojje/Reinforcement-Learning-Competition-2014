@@ -24,7 +24,7 @@ import utils.StateActionState;
 import utils.Utilities;
 
 public class ConfidenceIntervalAlgorithm implements AgentInterface {
-	private static final int startSample = 20000; // IT'S A MAGIC IN ME!!!
+	private static final int startSample = 4; // IT'S A MAGIC IN ME!!!
 	private static int numberOfAlgorithmRuns = startSample;
 	private static final double FACTOR = 1.5;
 
@@ -173,11 +173,14 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 		
 		if(NBR_REACHES * HABITATS_PER_REACH < 10 && model.NSAhasDoubled(lastStateAction)){
 			findQuppers();
+//			System.out.println("New policy");
 //			System.out.println(lastStateAction + " NSA "+model.NSA(lastStateAction));
 		} else {
 			if (step > numberOfAlgorithmRuns){
 				findQuppers();
+//				System.out.println("New policy: "+numberOfAlgorithmRuns);
 				numberOfAlgorithmRuns = (int) (numberOfAlgorithmRuns*FACTOR); 
+//				System.out.println(numberOfAlgorithmRuns);
 //				numberOfAlgorithmRuns += 100;
 			}
 		}
@@ -299,20 +302,22 @@ public class ConfidenceIntervalAlgorithm implements AgentInterface {
 	}
 	
 	private double totalMassToMove(StateAction sa) {
+		
 		Integer NSA = model.NSA(sa);
 		if (NSA == 0) {
 			throw new ArithmeticException("no nsa counts recorded (massToMove)");
 		}
-		int stateCount = model.getObservedStates().size();
-		
-		if(stateCount<1000){
-			double den = 2*(Math.log(2*Math.pow(2,stateCount) - 2) - Math.log(conf));
-			return (Math.sqrt((den/((double)NSA)))) / 2.0;
-		}
-		else{
-			return Math.sqrt( 2*(stateCount*Math.log(2)- Math.log(conf))/ (double) NSA);
-		}
-			
+		return Math.max(0.0, 1.0-NSA * 0.05);
+//		int stateCount = model.getObservedStates().size();
+//		
+//		if(stateCount<1000){
+//			double den = 2*(Math.log(2*Math.pow(2,stateCount) - 2) - Math.log(conf));
+//			return (Math.sqrt((den/((double)NSA)))) / 2.0;
+//		}
+//		else{
+//			return Math.sqrt( 2*(stateCount*Math.log(2)- Math.log(conf))/ (double) NSA);
+//		}
+//			
 		
 	}
 	
